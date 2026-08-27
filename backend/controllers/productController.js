@@ -32,7 +32,7 @@ exports.getAllProducts = async (req, res) => {
     }
 
     // 3. Category Slug
-    if (category) {
+    if (category && category !== 'accessories') {
       query.categorySlug = category;
     }
 
