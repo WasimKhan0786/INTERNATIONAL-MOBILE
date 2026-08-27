@@ -17,7 +17,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const settings = await window.api.settings.get();
   const whatsappCta = document.getElementById('home-whatsapp-btn');
   if (whatsappCta && settings.whatsapp) {
-    const cleanNumber = settings.whatsapp.replace(/[^0-9]/g, '');
+    let cleanNumber = settings.whatsapp.replace(/[^0-9]/g, '');
+    if (cleanNumber.length === 10) {
+      cleanNumber = '91' + cleanNumber;
+    }
+    if (!cleanNumber) {
+      cleanNumber = '917654085663';
+    }
     whatsappCta.href = `https://wa.me/${cleanNumber}?text=Hi,%20I%20want%20to%20place%20an%20order%20for%20mobile%20accessories.`;
   }
 });

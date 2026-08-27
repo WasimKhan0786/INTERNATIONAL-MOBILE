@@ -217,7 +217,13 @@ function updateWhatsAppOrderButton(settings) {
   const btn = document.getElementById('btn-detail-whatsapp-order');
   if (!btn || !settings.whatsapp || !currentProduct) return;
 
-  const cleanNum = settings.whatsapp.replace(/[^0-9]/g, '');
+  let cleanNum = settings.whatsapp ? settings.whatsapp.replace(/[^0-9]/g, '') : '';
+  if (cleanNum.length === 10) {
+    cleanNum = '91' + cleanNum;
+  }
+  if (!cleanNum) {
+    cleanNum = '917654085663';
+  }
   const itemPrice = currentProduct.discountPrice || currentProduct.price;
   const totalCost = itemPrice * currentQuantity;
 

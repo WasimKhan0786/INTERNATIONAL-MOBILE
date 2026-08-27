@@ -70,7 +70,13 @@ ${itemsText}
 -----------------------------------
 Please confirm my order and let me know the estimated delivery time. Thank you! 🙏`;
 
-    const cleanNum = settings.whatsapp.replace(/[^0-9]/g, '');
+    let cleanNum = settings.whatsapp ? settings.whatsapp.replace(/[^0-9]/g, '') : '';
+    if (cleanNum.length === 10) {
+      cleanNum = '91' + cleanNum;
+    }
+    if (!cleanNum) {
+      cleanNum = '917654085663'; // Fallback
+    }
     const whatsappUrl = `https://wa.me/${cleanNum}?text=${encodeURIComponent(textMsg)}`;
     const whatsappBtn = document.getElementById('btn-success-whatsapp-confirm');
     if (whatsappBtn) {

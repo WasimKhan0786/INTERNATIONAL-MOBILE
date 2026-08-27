@@ -335,6 +335,14 @@ function renderFooter(settings) {
   const footerEl = document.querySelector('footer');
   if (!footerEl) return;
 
+  let cleanNum = settings.whatsapp ? settings.whatsapp.replace(/[^0-9]/g, '') : '';
+  if (cleanNum.length === 10) {
+    cleanNum = '91' + cleanNum;
+  }
+  if (!cleanNum) {
+    cleanNum = '917654085663';
+  }
+
   const currentYear = new Date().getFullYear();
 
   // Social handles validation - hide if empty
@@ -375,7 +383,7 @@ function renderFooter(settings) {
           <h3>Customer Support</h3>
           <ul class="footer-links">
             <li><a href="contact.html">Help & Contact</a></li>
-            <li><a href="https://wa.me/${settings.whatsapp.replace(/[^0-9]/g, '')}" target="_blank">WhatsApp Chat Support</a></li>
+            <li><a href="https://wa.me/${cleanNum}" target="_blank">WhatsApp Chat Support</a></li>
             <li><a href="about.html#shipping">Shipping & Delivery Info</a></li>
             <li><a href="about.html#returns">Easy Returns Policy</a></li>
             <li><a href="about.html#privacy">Privacy & Terms</a></li>
@@ -425,7 +433,13 @@ function renderWhatsAppFloat(settings) {
     document.body.appendChild(widget);
   }
 
-  const cleanNumber = settings.whatsapp.replace(/[^0-9]/g, '');
+  let cleanNumber = settings.whatsapp ? settings.whatsapp.replace(/[^0-9]/g, '') : '';
+  if (cleanNumber.length === 10) {
+    cleanNumber = '91' + cleanNumber;
+  }
+  if (!cleanNumber) {
+    cleanNumber = '917654085663';
+  }
   widget.href = `https://wa.me/${cleanNumber}?text=Hi%20${encodeURIComponent(settings.shopName)},%20I%20have%20a%20query%20regarding%20mobile%20accessories.`;
   widget.innerHTML = `<i class="fa-brands fa-whatsapp"></i>`;
 }
