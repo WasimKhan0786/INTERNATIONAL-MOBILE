@@ -29,32 +29,65 @@ async function loadOrderReceipt(orderId) {
     document.getElementById('detail-total').textContent = `₹${order.total}`;
 
     // Build WhatsApp Confirmation Message
-    const itemsText = order.products.map(p => `- ${p.name} x${p.quantity} (₹${p.price * p.quantity})`).join('\n');
+    const itemsText = order.products.map((p, idx) => `${idx + 1}. *${p.name}* (Brand: ${p.brand || 'N/A'}) \n   Qty: ${p.quantity} | Price: ₹${p.price * p.quantity}`).join('\n\n');
     
-    const textMsg = `Hi *${settings.shopName}*,
+    const dateStr = new Date(order.createdAt).toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
 
-I just placed an order on your website. Here are my details:
-*Order Number:* ${order.id}
-*Name:* ${order.customerName}
-*Mobile:* ${order.mobile}
+    const textMsg = `🛍️ *NEW ORDER CONFIRMATION* 🛍️
+-----------------------------------
+Hello *${settings.shopName}*,
 
-*Items Ordered:*
+I have just placed an order on your website. Please find my order details below:
+
+🆔 *Order ID:* ${order.id}
+📅 *Date:* ${dateStr}
+
+👤 *CUSTOMER DETAILS:*
+• *Name:* ${order.customerName}
+• *Mobile:* ${order.mobile}
+• *Email:* ${order.email || 'N/A'}
+
+📦 *DELIVERY ADDRESS:*
+${order.address},
+${order.city}, ${order.state} - ${order.pincode}
+
+🗒️ *Order Notes:* ${order.orderNotes || 'None'}
+
+🛒 *ORDERED ITEMS:*
 ${itemsText}
 
-*Subtotal:* ₹${order.subtotal}
-*Delivery Charge:* ${order.deliveryCharge === 0 ? 'FREE' : '₹' + order.deliveryCharge}
-*Total Amount:* ₹${order.total}
-
-*Delivery Address:*
-${order.address}, ${order.city}, ${order.state} - ${order.pincode}
-
-Please confirm my order. Thank you!`;
+💵 *BILLING DETAILS:*
+• *Subtotal:* ₹${order.subtotal}
+• *Delivery Charge:* ${order.deliveryCharge === 0 ? 'FREE' : '₹' + order.deliveryCharge}
+• *Total Amount:* *₹${order.total}*
+• *Payment Method:* Cash on Delivery (COD)
+-----------------------------------
+Please confirm my order and let me know the estimated delivery time. Thank you! 🙏`;
 
     const cleanNum = settings.whatsapp.replace(/[^0-9]/g, '');
+    const whatsappUrl = `https://wa.me/${cleanNum}?text=${encodeURIComponent(textMsg)}`;
     const whatsappBtn = document.getElementById('btn-success-whatsapp-confirm');
     if (whatsappBtn) {
-      whatsappBtn.href = `https://wa.me/${cleanNum}?text=${encodeURIComponent(textMsg)}`;
+      whatsappBtn.href = whatsappUrl;
     }
+
+    // Auto redirect to WhatsApp in a new tab
+    setTimeout(() => {
+      try {
+        const waWindow = window.open(whatsappUrl, '_blank');
+        if (!waWindow || waWindow.closed || typeof waWindow.closed === 'undefined') {
+          console.log("Popup blocker prevented automatic redirection. User can click button manually.");
+        }
+      } catch (e) {
+        console.error("Auto redirect failed", e);
+      }
+    }, 1200);
 
   } catch (err) {
     console.error("Failed to load order receipt info", err);
