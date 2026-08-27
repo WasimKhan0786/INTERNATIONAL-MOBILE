@@ -49,6 +49,7 @@ exports.createOrder = async (req, res) => {
   try {
     const {
       customerName,
+      shopName,
       mobile,
       email,
       products,
@@ -105,6 +106,7 @@ exports.createOrder = async (req, res) => {
     const newOrder = new Order({
       orderNumber,
       customerName,
+      shopName,
       mobile,
       email,
       products,

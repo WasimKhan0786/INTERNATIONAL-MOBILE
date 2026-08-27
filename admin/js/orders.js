@@ -87,7 +87,10 @@ async function renderOrdersTable() {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td data-label="Order ID" style="font-weight: 700;">${order.id}</td>
-        <td data-label="Customer Name">${order.customerName}</td>
+        <td data-label="Customer Name">
+          <strong>${order.customerName}</strong><br>
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight: 500;">${order.shopName || 'N/A'}</span>
+        </td>
         <td data-label="Mobile">${order.mobile}</td>
         <td data-label="Date">${dateStr}</td>
         <td data-label="Total Amount" style="font-weight: 800; color:var(--text-dark);">₹${order.total}</td>
@@ -130,7 +133,7 @@ function openOrderModal(order) {
   document.getElementById('modal-order-title').textContent = `Order Details: ${order.id}`;
 
   // Fill text info
-  document.getElementById('modal-cust-name').textContent = order.customerName;
+  document.getElementById('modal-cust-name').innerHTML = `${order.customerName} <br><span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted);">Shop: ${order.shopName || 'N/A'}</span>`;
   document.getElementById('modal-cust-mobile').textContent = order.mobile;
   document.getElementById('modal-cust-email').textContent = order.email;
   document.getElementById('modal-cust-address').textContent = `${order.address}, ${order.city}, ${order.state} - ${order.pincode}`;

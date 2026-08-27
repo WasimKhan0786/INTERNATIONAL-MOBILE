@@ -21,6 +21,7 @@ async function loadOrderReceipt(orderId) {
     // Fill elements
     document.getElementById('success-order-id-label').textContent = order.id;
     document.getElementById('detail-name').textContent = order.customerName;
+    document.getElementById('detail-shop-name').textContent = order.shopName || 'N/A';
     document.getElementById('detail-mobile').textContent = order.mobile;
     document.getElementById('detail-address').textContent = `${order.address}, ${order.city}, ${order.state} - ${order.pincode}`;
     document.getElementById('detail-subtotal').textContent = `₹${order.subtotal}`;
@@ -50,6 +51,7 @@ I have just placed an order on your website. Please find my order details below:
 
 👤 *CUSTOMER DETAILS:*
 • *Name:* ${order.customerName}
+• *Shop Name:* ${order.shopName || 'N/A'}
 • *Mobile:* ${order.mobile}
 
 🛒 *ORDERED ITEMS:*

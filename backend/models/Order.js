@@ -43,6 +43,11 @@ const OrderSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  shopName: {
+    type: String,
+    required: true,
+    trim: true
+  },
   mobile: {
     type: String,
     required: true,

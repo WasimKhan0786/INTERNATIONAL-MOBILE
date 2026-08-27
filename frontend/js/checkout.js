@@ -71,12 +71,14 @@ async function handlePlaceOrder(e) {
   e.preventDefault();
 
   const name = document.getElementById('cust-name').value.trim();
+  const shopName = document.getElementById('cust-shop-name').value.trim();
   const mobile = document.getElementById('cust-mobile').value.trim();
 
   const cartItems = window.cart.get();
 
   const orderPayload = {
     customerName: name,
+    shopName: shopName,
     mobile: mobile,
     email: '',
     products: cartItems,
