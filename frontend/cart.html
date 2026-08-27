@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Shopping Cart</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Core Design System Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header></header>
+
+  <!-- Page Banner -->
+  <section class="page-banner">
+    <div class="container">
+      <h1>Shopping Cart</h1>
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        <span>Cart</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cart Content -->
+  <main class="container">
+    
+    <!-- Empty State -->
+    <div class="empty-state" id="cart-empty-state" style="display: none;">
+      <div class="empty-state-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+      <h2>Your Cart is Empty</h2>
+      <p>Looks like you haven't added any mobile accessories to your cart yet.</p>
+      <a href="shop.html" class="btn btn-primary" style="margin-top: 20px;">Explore Products</a>
+    </div>
+
+    <!-- Active Cart Layout -->
+    <div class="cart-layout" id="cart-active-layout">
+      <!-- Items List -->
+      <section class="cart-items-container" id="cart-items-list">
+        <!-- Cart item rows load here -->
+      </section>
+
+      <!-- Cart Summary -->
+      <section class="cart-summary-box">
+        <h3 class="cart-summary-title">Order Summary</h3>
+        
+        <!-- Free Shipping Tracker -->
+        <div class="free-shipping-progress" id="free-shipping-bar-box">
+          <span id="free-shipping-msg">Add ₹0 more for FREE Delivery!</span>
+        </div>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="summary-subtotal">₹0</span>
+        </div>
+        
+        <div class="summary-row">
+          <span>Delivery Charge</span>
+          <span id="summary-delivery">₹0</span>
+        </div>
+
+        <div class="summary-row total-row">
+          <span>Total Amount</span>
+          <span id="summary-total">₹0</span>
+        </div>
+
+        <a href="checkout.html" class="btn btn-primary btn-block" style="margin: 20px 0 10px;">Proceed to Checkout</a>
+        <button class="btn btn-outline btn-block btn-sm" id="btn-clear-cart-action">Clear Entire Cart</button>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer></footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/cart.js"></script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Manage Products | TechZone</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Shared Style settings -->
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- Sidebar (admin-common.js) -->
+  <nav class="admin-sidebar"></nav>
+
+  <!-- Workspace -->
+  <div class="admin-workspace">
+    <!-- Header (admin-common.js) -->
+    <header class="admin-header"></header>
+
+    <!-- Content -->
+    <main class="admin-content">
+      
+      <!-- Actions Bar -->
+      <section class="admin-actions-bar">
+        <div style="display: flex; gap: 15px; flex-grow: 1; max-width: 600px;" class="form-grid">
+          <!-- Search box -->
+          <div style="position: relative; flex-grow: 1;">
+            <input type="text" id="admin-product-search" placeholder="Search by name, SKU, brand..." style="padding: 10px 14px 10px 36px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); width: 100%;">
+            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+          </div>
+          <!-- Category Filter -->
+          <div>
+            <select id="admin-product-filter-category" style="padding: 10px 14px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); background-color: white;">
+              <option value="">All Categories</option>
+              <!-- Filled dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <a href="add-product.html" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New Product</a>
+        </div>
+      </section>
+
+      <!-- Products Table -->
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Product Info</th>
+              <th>Category</th>
+              <th>SKU</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Highlights</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-products-tbody">
+            <tr>
+              <td colspan="9" style="text-align: center;">
+                <div class="spinner" style="margin: 30px auto;"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../frontend/js/api.js"></script>
+  <script src="../frontend/js/common.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/products.js"></script>
+</body>
+</html>

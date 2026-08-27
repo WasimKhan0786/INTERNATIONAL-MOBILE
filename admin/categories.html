@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Manage Categories | TechZone</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Styling system link -->
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- Sidebar (admin-common.js) -->
+  <nav class="admin-sidebar"></nav>
+
+  <!-- Workspace -->
+  <div class="admin-workspace">
+    <!-- Header (admin-common.js) -->
+    <header class="admin-header"></header>
+
+    <!-- Content Split Layout -->
+    <main class="admin-content">
+      <div class="dashboard-flex-grid">
+        
+        <!-- Category Listing Left -->
+        <div class="admin-table-container" style="margin-bottom: 0;">
+          <div style="padding: 20px; font-weight: 700; border-bottom: 1px solid var(--border-admin);">
+            Categories Listing
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-categories-tbody">
+              <tr>
+                <td colspan="5" style="text-align: center;">
+                  <div class="spinner" style="margin: 20px auto;"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add/Edit Category Form Right -->
+        <div class="admin-form-box" style="margin-bottom: 0; height: fit-content;">
+          <h3 class="admin-form-title" id="category-form-title">Add New Category</h3>
+          
+          <form id="admin-category-form" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Hidden id if editing -->
+            <input type="hidden" id="cat-id">
+
+            <div class="form-group">
+              <label for="cat-name">Category Name *</label>
+              <input type="text" id="cat-name" required placeholder="e.g. Phone Covers">
+            </div>
+
+            <div class="form-group">
+              <label for="cat-desc">Description</label>
+              <textarea id="cat-desc" placeholder="Brief description of the accessory collection..." style="height: 70px;"></textarea>
+            </div>
+
+            <!-- Image paste -->
+            <div class="form-group">
+              <label for="cat-image-url">Image URL Link (Option 1)</label>
+              <input type="url" id="cat-image-url" placeholder="https://unsplash.com/... or cloudinary url">
+            </div>
+
+            <!-- File Upload -->
+            <div class="form-group">
+              <label>Upload Category Icon (Option 2)</label>
+              <div class="admin-image-upload-card" id="cat-upload-trigger-card" style="padding: 15px 10px;">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; color: var(--text-muted); margin-bottom: 5px;"></i>
+                <span style="font-weight: 600; font-size: 0.85rem; display: block;">Select Image</span>
+                <input type="file" id="cat-file-input" accept="image/*" style="display: none;">
+              </div>
+              <div class="admin-uploaded-previews" id="cat-preview-box-container" style="margin-top: 10px;">
+                <!-- Thumbnail -->
+              </div>
+            </div>
+
+            <!-- Status switch toggle -->
+            <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; border: 1px solid var(--border-admin); padding: 10px 15px; border-radius: var(--border-radius-sm); margin-top: 10px;">
+              <div>
+                <strong style="display: block; font-size: 0.85rem;">Active Status</strong>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Enable to display in customer listings.</span>
+              </div>
+              <label class="admin-switch">
+                <input type="checkbox" id="cat-status-active" checked>
+                <span class="admin-slider"></span>
+              </label>
+            </div>
+
+            <!-- Actions buttons -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+              <button type="button" class="btn btn-outline btn-sm" id="btn-cancel-edit-category" style="display: none;">Cancel Edit</button>
+              <button type="submit" class="btn btn-primary btn-sm" id="btn-submit-category-form">Save Category</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../frontend/js/api.js"></script>
+  <script src="../frontend/js/common.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/categories.js"></script>
+</body>
+</html>

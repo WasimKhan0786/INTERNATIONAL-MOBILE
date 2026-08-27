@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Admin Dashboard | TechZone</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Reuse Customer Toast styles -->
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- Collapsible Navigation Drawer Sidebar (Populated by admin-common.js) -->
+  <nav class="admin-sidebar"></nav>
+
+  <!-- Main Panel Workspace -->
+  <div class="admin-workspace">
+    <!-- Sticky Top Header (Populated by admin-common.js) -->
+    <header class="admin-header"></header>
+
+    <!-- Content Workspace -->
+    <main class="admin-content">
+      
+      <!-- Metrics Grid -->
+      <section class="admin-stats-grid">
+        <!-- Stat Revenue -->
+        <a href="orders.html" class="admin-stat-card stat-revenue" style="display: flex;">
+          <div>
+            <div class="admin-stat-label">Total Revenue</div>
+            <div class="admin-stat-val" id="stat-revenue-val">₹0</div>
+          </div>
+          <div class="admin-stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        </a>
+
+        <!-- Stat Orders -->
+        <a href="orders.html" class="admin-stat-card stat-orders" style="display: flex;">
+          <div>
+            <div class="admin-stat-label">Total Orders</div>
+            <div class="admin-stat-val" id="stat-orders-val">0</div>
+          </div>
+          <div class="admin-stat-icon"><i class="fa-solid fa-receipt"></i></div>
+        </a>
+
+        <!-- Stat Pending -->
+        <a href="orders.html?status=Pending" class="admin-stat-card stat-pending" style="display: flex;">
+          <div>
+            <div class="admin-stat-label">Pending Orders</div>
+            <div class="admin-stat-val" id="stat-pending-val">0</div>
+          </div>
+          <div class="admin-stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+        </a>
+
+        <!-- Stat Low Stock -->
+        <a href="products.html?stock=out" class="admin-stat-card stat-lowstock" style="display: flex; border-left: 4px solid var(--danger);">
+          <div>
+            <div class="admin-stat-label">Out of Stock</div>
+            <div class="admin-stat-val" id="stat-outofstock-val" style="color: var(--danger);">0</div>
+          </div>
+          <div class="admin-stat-icon" style="background-color: rgba(239, 68, 68, 0.1); color: var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        </a>
+      </section>
+
+      <!-- Dashboard flex columns (Recent orders & alerts) -->
+      <div class="dashboard-flex-grid">
+        
+        <!-- Recent Orders (Left Column) -->
+        <div class="admin-table-container" style="margin-bottom: 0;">
+          <div style="padding: 20px; font-weight: 700; border-bottom: 1px solid var(--border-admin); display: flex; justify-content: space-between; align-items: center;">
+            <span>Recent Orders</span>
+            <a href="orders.html" style="font-size: 0.8rem; color: var(--primary-color);">View All Orders <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-recent-orders-tbody">
+              <!-- Loaded dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Alerts Column (Right Column) -->
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+          
+          <!-- Low Stock Warning Box -->
+          <div class="admin-form-box" style="padding: 20px; margin-bottom: 0;">
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-circle-exclamation" style="color: var(--warning);"></i> Low Stock Accessories
+            </h3>
+            <div id="dashboard-low-stock-list" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Dynamic list of items -->
+            </div>
+          </div>
+
+          <!-- Bestsellers Box -->
+          <div class="admin-form-box" style="padding: 20px; margin-bottom: 0;">
+            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-fire" style="color: var(--primary-color);"></i> Best Sellers
+            </h3>
+            <div id="dashboard-bestsellers-list" style="display: flex; flex-direction: column; gap: 10px;">
+              <!-- Dynamic list of items -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../frontend/js/api.js"></script>
+  <!-- Reuse confirmation modal elements code -->
+  <script src="../frontend/js/common.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

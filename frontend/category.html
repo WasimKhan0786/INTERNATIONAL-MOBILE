@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Category Products</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Core Design System Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header></header>
+
+  <!-- Breadcrumb Page Banner -->
+  <section class="page-banner">
+    <div class="container">
+      <h1 id="category-title">Category Name</h1>
+      <p id="category-desc" style="color: rgba(255,255,255,0.8); font-size: 0.95rem; margin-top: 5px;"></p>
+      <div class="breadcrumb" style="margin-top: 12px;">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        <span>Categories</span>
+        <span>/</span>
+        <span id="breadcrumb-category-name" style="color: white; font-weight: 500;">Category</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Grid -->
+  <main class="container section-padding">
+    <div class="shop-top-controls" style="margin-bottom: 30px;">
+      <div class="shop-results-count" id="category-count-label">
+        Showing 0 products
+      </div>
+      <div class="shop-sorting">
+        <label for="category-sort-select" style="font-size: 0.9rem; font-weight: 600; margin-right: 5px;">Sort By:</label>
+        <select id="category-sort-select">
+          <option value="newest">Newest Arrivals</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="bestselling">Popularity</option>
+          <option value="discount">Biggest Discount</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Product Grid list -->
+    <div class="products-grid" id="category-products-grid">
+      <div class="loader-spinner" style="grid-column: 1/-1;">
+        <div class="spinner"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer></footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/category.js"></script>
+</body>
+</html>

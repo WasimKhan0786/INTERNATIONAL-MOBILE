@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Manage Customers | TechZone</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Styling system links -->
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- Sidebar (admin-common.js) -->
+  <nav class="admin-sidebar"></nav>
+
+  <!-- Workspace -->
+  <div class="admin-workspace">
+    <!-- Header (admin-common.js) -->
+    <header class="admin-header"></header>
+
+    <!-- Content -->
+    <main class="admin-content">
+      
+      <!-- Actions bar -->
+      <section class="admin-actions-bar">
+        <div style="position: relative; flex-grow: 1; max-width: 400px;">
+          <input type="text" id="admin-customer-search" placeholder="Search customers by name, phone..." style="padding: 10px 14px 10px 36px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); width: 100%;">
+          <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+        </div>
+      </section>
+
+      <!-- Customer table -->
+      <div class="admin-table-container">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Customer Name</th>
+              <th>Contact Number</th>
+              <th>Email Address</th>
+              <th>Location</th>
+              <th>Orders Placed</th>
+              <th>Total Spent</th>
+            </tr>
+          </thead>
+          <tbody id="admin-customers-tbody">
+            <tr>
+              <td colspan="6" style="text-align: center;">
+                <div class="spinner" style="margin: 20px auto;"></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../frontend/js/api.js"></script>
+  <script src="../frontend/js/common.js"></script>
+  <script src="js/admin-common.js"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Guard page load
+      const checkSession = setInterval(async () => {
+        const session = await window.api.auth.me();
+        if (session) {
+          clearInterval(checkSession);
+          loadCustomersList();
+        }
+      }, 100);
+
+      // Bind search event
+      const searchIn = document.getElementById('admin-customer-search');
+      if (searchIn) {
+        searchIn.addEventListener('input', loadCustomersList);
+      }
+    });
+
+    async function loadCustomersList() {
+      const tbody = document.getElementById('admin-customers-tbody');
+      const searchVal = document.getElementById('admin-customer-search').value.trim().toLowerCase();
+      if (!tbody) return;
+
+      try {
+        const orders = await window.api.orders.getAll();
+        
+        // Group orders by mobile number
+        const customersMap = {};
+        orders.forEach(order => {
+          const key = order.mobile.trim();
+          if (!customersMap[key]) {
+            customersMap[key] = {
+              name: order.customerName,
+              mobile: order.mobile,
+              email: order.email,
+              location: `${order.city}, ${order.state}`,
+              orderCount: 0,
+              totalSpent: 0
+            };
+          }
+          customersMap[key].orderCount++;
+          // Sum up total spent if the order is not Cancelled
+          if (order.status !== 'Cancelled') {
+            customersMap[key].totalSpent += order.total;
+          }
+        });
+
+        let customers = Object.values(customersMap);
+
+        // Filter by search values
+        if (searchVal) {
+          customers = customers.filter(c => 
+            c.name.toLowerCase().includes(searchVal) || 
+            c.mobile.includes(searchVal) || 
+            c.email.toLowerCase().includes(searchVal)
+          );
+        }
+
+        tbody.innerHTML = '';
+
+        if (customers.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px 0;">No customer profiles recorded yet.</td></tr>`;
+          return;
+        }
+
+        customers.forEach(cust => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td data-label="Customer Name" style="font-weight: 700;">${cust.name}</td>
+            <td data-label="Contact Number">${cust.mobile}</td>
+            <td data-label="Email Address">${cust.email}</td>
+            <td data-label="Location">${cust.location}</td>
+            <td data-label="Orders Placed" style="font-weight: 700; text-align: center;">${cust.orderCount}</td>
+            <td data-label="Total Spent" style="font-weight: 800; color: var(--primary-color);">₹${cust.totalSpent}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">Failed to load customers profiles.</td></tr>`;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Shop All Products</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Core Design System Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header></header>
+
+  <!-- Breadcrumb Page Banner -->
+  <section class="page-banner">
+    <div class="container">
+      <h1>All Products</h1>
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        <span>Shop</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Shop Layout -->
+  <main class="container">
+    <div class="shop-layout">
+      
+      <!-- Sidebar Filters -->
+      <aside class="shop-sidebar" id="filter-sidebar">
+        <!-- Close button mobile only -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;" class="mobile-filter-header">
+          <h3 style="font-weight: 800;">Filters</h3>
+          <button id="mobile-filter-close" style="background: none; border: none; font-size: 1.3rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Search input in sidebar for mobile -->
+        <div class="shop-sidebar-widget" style="padding: 10px; border-radius: var(--border-radius-sm); margin-bottom: 15px;">
+          <h3 style="margin-bottom: 10px; border-bottom: none; padding-bottom: 0;">Search</h3>
+          <div style="position: relative;">
+            <input type="text" id="sidebar-search" placeholder="Type name, brand..." style="width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm);">
+          </div>
+        </div>
+
+        <!-- Categories Widget -->
+        <div class="shop-sidebar-widget">
+          <h3>Categories</h3>
+          <ul class="filter-list" id="filter-categories-list">
+            <!-- Loaded dynamically -->
+          </ul>
+        </div>
+
+        <!-- Brands Widget -->
+        <div class="shop-sidebar-widget">
+          <h3>Brands</h3>
+          <ul class="filter-list" id="filter-brands-list">
+            <!-- Loaded dynamically -->
+          </ul>
+        </div>
+
+        <!-- Price Range Widget -->
+        <div class="shop-sidebar-widget">
+          <h3>Price Range</h3>
+          <div class="price-range-inputs">
+            <input type="number" id="filter-price-min" placeholder="Min" min="0">
+            <input type="number" id="filter-price-max" placeholder="Max" min="0">
+          </div>
+          <button class="btn btn-primary btn-sm btn-block" style="margin-top: 15px;" id="btn-apply-price-filter">Apply Price</button>
+        </div>
+
+        <!-- Availability Widget -->
+        <div class="shop-sidebar-widget">
+          <h3>Availability</h3>
+          <ul class="filter-list">
+            <li class="filter-item">
+              <label for="filter-stock-instock">
+                <input type="checkbox" id="filter-stock-instock">
+                In Stock Only
+              </label>
+            </li>
+          </ul>
+        </div>
+
+        <button class="btn btn-outline btn-block btn-sm" id="btn-clear-all-filters">Clear All Filters</button>
+      </aside>
+
+      <!-- Products Grid & Controls -->
+      <section>
+        
+        <!-- Controls Top -->
+        <div class="shop-top-controls">
+          <button class="mobile-filter-trigger" id="mobile-filter-open">
+            <i class="fa-solid fa-sliders"></i> Filter Products
+          </button>
+          
+          <div class="shop-results-count" id="shop-results-count-label">
+            Showing 0 of 0 products
+          </div>
+          
+          <div class="shop-sorting">
+            <label for="shop-sort-select" style="font-size: 0.9rem; font-weight: 600; margin-right: 5px;">Sort By:</label>
+            <select id="shop-sort-select">
+              <option value="newest">Newest Arrivals</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="bestselling">Popularity</option>
+              <option value="discount">Biggest Discount</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Products Listing -->
+        <div class="products-grid" id="shop-products-grid">
+          <!-- Loaded dynamically -->
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer></footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/shop.js"></script>
+</body>
+</html>

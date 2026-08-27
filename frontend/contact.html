@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Contact Us</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Core Design System Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header></header>
+
+  <!-- Page Banner -->
+  <section class="page-banner">
+    <div class="container">
+      <h1>Contact Us</h1>
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        <span>Contact</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <main class="container section-padding" style="margin-bottom: 40px;">
+    <div class="checkout-layout">
+      
+      <!-- Info Details Left -->
+      <section class="checkout-form-box" style="display: flex; flex-direction: column; gap: 25px;">
+        <h3 class="checkout-section-title" style="margin-bottom: 0;">Get In Touch</h3>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">Have questions about mobile covers compatibility or tempered glass screen protector installations? Drop us a line or chat directly on WhatsApp. We are here to help!</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          <!-- Card Address -->
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background-color: rgba(255,87,34,0.05); display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 1.2rem; flex-shrink: 0;">
+              <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 0.95rem;">Shop Location</strong>
+              <span style="font-size: 0.85rem; color: var(--text-muted);" id="contact-address-text">Loading address...</span>
+            </div>
+          </div>
+
+          <!-- Card Phone -->
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background-color: rgba(255,87,34,0.05); display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 1.2rem; flex-shrink: 0;">
+              <i class="fa-solid fa-phone"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 0.95rem;">Call Support</strong>
+              <span style="font-size: 0.85rem; color: var(--text-muted);" id="contact-phone-text">Loading number...</span>
+            </div>
+          </div>
+
+          <!-- Card WhatsApp -->
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background-color: rgba(255,87,34,0.05); display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 1.2rem; flex-shrink: 0;">
+              <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 0.95rem;">WhatsApp Chat</strong>
+              <a href="" id="contact-whatsapp-link" target="_blank" style="font-size: 0.85rem; color: var(--primary-color); font-weight: 600;">Chat Now</a>
+            </div>
+          </div>
+
+          <!-- Card Email -->
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background-color: rgba(255,87,34,0.05); display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 1.2rem; flex-shrink: 0;">
+              <i class="fa-solid fa-envelope"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 0.95rem;">Email Address</strong>
+              <span style="font-size: 0.85rem; color: var(--text-muted);" id="contact-email-text">Loading email...</span>
+            </div>
+          </div>
+
+          <!-- Card Hours -->
+          <div style="display: flex; gap: 15px; align-items: flex-start;">
+            <div style="width: 45px; height: 45px; border-radius: 50%; background-color: rgba(255,87,34,0.05); display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 1.2rem; flex-shrink: 0;">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <div>
+              <strong style="display: block; font-size: 0.95rem;">Opening Hours</strong>
+              <span style="font-size: 0.85rem; color: var(--text-muted);" id="contact-hours-text">Loading hours...</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Message Form Right -->
+      <section class="checkout-form-box">
+        <h3 class="checkout-section-title"><i class="fa-solid fa-paper-plane" style="color: var(--primary-color); margin-right: 8px;"></i> Send An Inquiry</h3>
+        
+        <form id="contact-form" class="form-grid" style="margin-top: 20px;">
+          <div class="form-group full-width">
+            <label for="con-name">Your Full Name *</label>
+            <input type="text" id="con-name" required placeholder="e.g. Vikram Malhotra">
+          </div>
+          
+          <div class="form-group">
+            <label for="con-email">Email Address *</label>
+            <input type="email" id="con-email" required placeholder="e.g. name@email.com">
+          </div>
+
+          <div class="form-group">
+            <label for="con-subject">Subject *</label>
+            <input type="text" id="con-subject" required placeholder="e.g. Covers Compatibility">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="con-msg">Message Comments *</label>
+            <textarea id="con-msg" required placeholder="Describe your query in detail..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block" style="grid-column: 1/-1;">Submit Contact Inquiry</button>
+        </form>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer></footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Dynamic details filling
+      const settings = await window.api.settings.get();
+      document.getElementById('contact-address-text').textContent = settings.address;
+      document.getElementById('contact-phone-text').textContent = settings.phone;
+      document.getElementById('contact-email-text').textContent = settings.email;
+      document.getElementById('contact-hours-text').textContent = settings.openingHours;
+      
+      const cleanNum = settings.whatsapp.replace(/[^0-9]/g, '');
+      const waLink = document.getElementById('contact-whatsapp-link');
+      waLink.href = `https://wa.me/${cleanNum}?text=Hi,%20I%20have%20an%20inquiry%20from%20your%20website.`;
+      waLink.textContent = `Chat on ${settings.whatsapp}`;
+
+      // Form Bind
+      document.getElementById('contact-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        window.showToast("Inquiry submitted successfully! We will contact you soon.", "success");
+        e.target.reset();
+      });
+    });
+  </script>
+</body>
+</html>

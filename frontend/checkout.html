@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Checkout</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Core Design System Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header></header>
+
+  <!-- Page Banner -->
+  <section class="page-banner">
+    <div class="container">
+      <h1>Checkout</h1>
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        <a href="cart.html">Cart</a>
+        <span>/</span>
+        <span>Checkout</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Checkout Content -->
+  <main class="container">
+    <form id="checkout-submit-form" class="checkout-layout">
+      
+      <!-- Delivery Details Left -->
+      <section class="checkout-form-box">
+        <h3 class="checkout-section-title"><i class="fa-solid fa-truck" style="color: var(--primary-color); margin-right: 8px;"></i> Delivery Address Details</h3>
+        
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="cust-name">Full Name *</label>
+            <input type="text" id="cust-name" required placeholder="e.g. Aman Varma">
+          </div>
+          
+          <div class="form-group">
+            <label for="cust-mobile">Mobile Number *</label>
+            <input type="tel" id="cust-mobile" required placeholder="10-digit mobile number" pattern="[0-9]{10}">
+          </div>
+
+          <div class="form-group">
+            <label for="cust-email">Email Address *</label>
+            <input type="email" id="cust-email" required placeholder="e.g. name@email.com">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="cust-address">Street Address / House No. *</label>
+            <input type="text" id="cust-address" required placeholder="Flat/House No., building name, street address">
+          </div>
+
+          <div class="form-group">
+            <label for="cust-city">City *</label>
+            <input type="text" id="cust-city" required placeholder="e.g. Noida">
+          </div>
+
+          <div class="form-group">
+            <label for="cust-state">State *</label>
+            <input type="text" id="cust-state" required placeholder="e.g. Uttar Pradesh">
+          </div>
+
+          <div class="form-group">
+            <label for="cust-pincode">Pincode *</label>
+            <input type="text" id="cust-pincode" required placeholder="6-digit postal code" pattern="[0-9]{6}">
+          </div>
+
+          <div class="form-group full-width">
+            <label for="cust-notes">Order Notes (Optional)</label>
+            <textarea id="cust-notes" placeholder="Notes about your delivery, e.g. special instructions for carrier."></textarea>
+          </div>
+        </div>
+
+        <h3 class="checkout-section-title" style="margin-top: 35px;"><i class="fa-solid fa-credit-card" style="color: var(--primary-color); margin-right: 8px;"></i> Payment Method</h3>
+        <div class="payment-method-selector">
+          <i class="fa-solid fa-wallet" style="font-size: 1.5rem; color: var(--primary-color);"></i>
+          <div>
+            <strong style="display: block; font-size: 0.95rem;">Cash on Delivery (COD)</strong>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Pay with cash at your doorstep upon receiving the package.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Order Summary Right -->
+      <section class="cart-summary-box">
+        <h3 class="cart-summary-title">Items in Order</h3>
+        
+        <!-- Cart Summary Items list -->
+        <div id="checkout-summary-items-list" style="margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+          <!-- Loaded dynamically -->
+        </div>
+
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="checkout-subtotal">₹0</span>
+        </div>
+        
+        <div class="summary-row">
+          <span>Delivery Charge</span>
+          <span id="checkout-delivery">₹0</span>
+        </div>
+
+        <div class="summary-row total-row" style="margin-bottom: 25px;">
+          <span>Total Amount</span>
+          <span id="checkout-total">₹0</span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Place Cash on Delivery Order</button>
+      </section>
+
+    </form>
+  </main>
+
+  <!-- Footer -->
+  <footer></footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/checkout.js"></script>
+</body>
+</html>

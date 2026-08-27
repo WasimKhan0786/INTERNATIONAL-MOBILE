@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Manage Banners | TechZone</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Styling system link -->
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- Sidebar (admin-common.js) -->
+  <nav class="admin-sidebar"></nav>
+
+  <!-- Workspace -->
+  <div class="admin-workspace">
+    <!-- Header (admin-common.js) -->
+    <header class="admin-header"></header>
+
+    <!-- Content Split Layout -->
+    <main class="admin-content">
+      <div class="dashboard-flex-grid">
+        
+        <!-- Banners Listing Left -->
+        <div class="admin-table-container" style="margin-bottom: 0;">
+          <div style="padding: 20px; font-weight: 700; border-bottom: 1px solid var(--border-admin);">
+            Homepage Slides Carousel Banners
+          </div>
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Slide Title</th>
+                <th>Order</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-banners-tbody">
+              <tr>
+                <td colspan="5" style="text-align: center;">
+                  <div class="spinner" style="margin: 20px auto;"></div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add/Edit Banner Form Right -->
+        <div class="admin-form-box" style="margin-bottom: 0; height: fit-content;">
+          <h3 class="admin-form-title" id="banner-form-title">Add Carousel Slide</h3>
+          
+          <form id="admin-banner-form" style="display: flex; flex-direction: column; gap: 15px;">
+            <!-- Hidden ID if editing -->
+            <input type="hidden" id="banner-id">
+
+            <div class="form-group">
+              <label for="banner-title">Slide Title Heading *</label>
+              <input type="text" id="banner-title" required placeholder="e.g. Premium Mobile Covers">
+            </div>
+
+            <div class="form-group">
+              <label for="banner-subtitle">Subtitle Description *</label>
+              <textarea id="banner-subtitle" required placeholder="e.g. Elevate your smartphone style with drop protection..." style="height: 60px;"></textarea>
+            </div>
+
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 15px;">
+              <div class="form-group">
+                <label for="banner-btn-text">Button Text</label>
+                <input type="text" id="banner-btn-text" placeholder="e.g. Shop Now">
+              </div>
+              <div class="form-group">
+                <label for="banner-btn-url">Button Redirect URL</label>
+                <input type="text" id="banner-btn-url" placeholder="e.g. shop.html?category=phone-covers">
+              </div>
+            </div>
+
+            <div class="form-grid" style="grid-template-columns: 1.2fr 0.8fr; gap: 15px;">
+              <div class="form-group">
+                <label for="banner-badge">Offer/Discount Tag</label>
+                <input type="text" id="banner-badge" placeholder="e.g. Flat 50% Off (Optional)">
+              </div>
+              <div class="form-group">
+                <label for="banner-order">Display Sequence</label>
+                <input type="number" id="banner-order" required min="1" value="1">
+              </div>
+            </div>
+
+            <!-- Image URL -->
+            <div class="form-group">
+              <label for="banner-image-url">Background Image URL (Option 1)</label>
+              <input type="url" id="banner-image-url" placeholder="https://unsplash.com/... or cloudinary url">
+            </div>
+
+            <!-- File Upload -->
+            <div class="form-group">
+              <label>Upload Slide Image (Option 2)</label>
+              <div class="admin-image-upload-card" id="banner-upload-trigger-card" style="padding: 15px 10px;">
+                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.5rem; color: var(--text-muted); margin-bottom: 5px;"></i>
+                <span style="font-weight: 600; font-size: 0.85rem; display: block;">Select Image file</span>
+                <input type="file" id="banner-file-input" accept="image/*" style="display: none;">
+              </div>
+              <div class="admin-uploaded-previews" id="banner-preview-box-container" style="margin-top: 10px;">
+                <!-- Thumbnail -->
+              </div>
+            </div>
+
+            <!-- Status active toggle -->
+            <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; border: 1px solid var(--border-admin); padding: 10px 15px; border-radius: var(--border-radius-sm); margin-top: 10px;">
+              <div>
+                <strong style="display: block; font-size: 0.85rem;">Active Status</strong>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Enable to display in Homepage Slider.</span>
+              </div>
+              <label class="admin-switch">
+                <input type="checkbox" id="banner-status-active" checked>
+                <span class="admin-slider"></span>
+              </label>
+            </div>
+
+            <!-- Actions buttons -->
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+              <button type="button" class="btn btn-outline btn-sm" id="btn-cancel-edit-banner" style="display: none;">Cancel Edit</button>
+              <button type="submit" class="btn btn-primary btn-sm" id="btn-submit-banner-form">Save Banner</button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../frontend/js/api.js"></script>
+  <script src="../frontend/js/common.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/banners.js"></script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Website Settings | TechZone</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Styling system link -->
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- Sidebar (admin-common.js) -->
+  <nav class="admin-sidebar"></nav>
+
+  <!-- Workspace -->
+  <div class="admin-workspace">
+    <!-- Header (admin-common.js) -->
+    <header class="admin-header"></header>
+
+    <!-- Content Split Layout -->
+    <main class="admin-content" style="max-width: 900px;">
+      
+      <!-- Settings Form -->
+      <form id="admin-settings-form" class="admin-form-box">
+        <h2 class="admin-form-title">Store & Brand Settings</h2>
+
+        <!-- Brand Information -->
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;">1. Business Details</h3>
+        <div class="form-grid" style="margin-bottom: 25px;">
+          <div class="form-group">
+            <label for="set-shopname">Shop Name *</label>
+            <input type="text" id="set-shopname" required placeholder="e.g. TechZone Mobile Accessories">
+          </div>
+          <div class="form-group">
+            <label for="set-tagline">Tagline *</label>
+            <input type="text" id="set-tagline" required placeholder="e.g. Your One-Stop Mobile Accessories Store">
+          </div>
+          
+          <!-- Logo selection -->
+          <div class="form-group">
+            <label for="set-logo-url">Logo Image URL</label>
+            <input type="url" id="set-logo-url" placeholder="https://unsplash.com/... or Base64">
+            <input type="file" id="set-logo-file" accept="image/*" style="margin-top: 8px; font-size: 0.8rem;">
+            <div id="logo-preview-container" style="margin-top: 10px;"></div>
+          </div>
+
+          <!-- Favicon selection -->
+          <div class="form-group">
+            <label for="set-favicon-url">Favicon Image URL</label>
+            <input type="url" id="set-favicon-url" placeholder="https://unsplash.com/... or Base64">
+            <input type="file" id="set-favicon-file" accept="image/*" style="margin-top: 8px; font-size: 0.8rem;">
+            <div id="favicon-preview-container" style="margin-top: 10px;"></div>
+          </div>
+        </div>
+
+        <!-- Contact Information -->
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;">2. Contact Coordinates</h3>
+        <div class="form-grid" style="margin-bottom: 25px;">
+          <div class="form-group">
+            <label for="set-phone">Support Phone *</label>
+            <input type="text" id="set-phone" required placeholder="e.g. +91 98765 43210">
+          </div>
+          <div class="form-group">
+            <label for="set-whatsapp">WhatsApp Number *</label>
+            <input type="text" id="set-whatsapp" required placeholder="e.g. +91 98765 43210 (include country code)">
+          </div>
+          <div class="form-group">
+            <label for="set-email">Email Address *</label>
+            <input type="email" id="set-email" required placeholder="e.g. info@techzone.com">
+          </div>
+          <div class="form-group">
+            <label for="set-hours">Opening Hours *</label>
+            <input type="text" id="set-hours" required placeholder="e.g. Mon - Sat: 10:00 AM - 09:00 PM">
+          </div>
+          <div class="form-group full-width">
+            <label for="set-address">Physical Shop Address *</label>
+            <textarea id="set-address" required placeholder="Store full address details..." style="height: 60px;"></textarea>
+          </div>
+        </div>
+
+        <!-- Social Links -->
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;">3. Social Media Links</h3>
+        <div class="form-grid" style="margin-bottom: 25px;">
+          <div class="form-group">
+            <label for="set-instagram">Instagram URL</label>
+            <input type="url" id="set-instagram" placeholder="https://instagram.com/profile">
+          </div>
+          <div class="form-group">
+            <label for="set-facebook">Facebook URL</label>
+            <input type="url" id="set-facebook" placeholder="https://facebook.com/profile">
+          </div>
+          <div class="form-group">
+            <label for="set-youtube">YouTube URL</label>
+            <input type="url" id="set-youtube" placeholder="https://youtube.com/channel">
+          </div>
+          <div class="form-group">
+            <label for="set-telegram">Telegram URL</label>
+            <input type="url" id="set-telegram" placeholder="https://t.me/username">
+          </div>
+        </div>
+
+        <!-- Delivery & Customization -->
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;">4. Delivery & Themes</h3>
+        <div class="form-grid" style="margin-bottom: 25px;">
+          <div class="form-group">
+            <label for="set-deliverycharge">Delivery Fee (₹) *</label>
+            <input type="number" id="set-deliverycharge" required min="0" placeholder="e.g. 50">
+          </div>
+          <div class="form-group">
+            <label for="set-threshold">Free Delivery Threshold (₹) *</label>
+            <input type="number" id="set-threshold" required min="0" placeholder="e.g. 499">
+          </div>
+          <div class="form-group">
+            <label for="set-currency">Currency Symbol *</label>
+            <input type="text" id="set-currency" required placeholder="e.g. ₹" value="₹">
+          </div>
+          
+          <div class="form-group" style="flex-direction: row; gap: 20px; align-items: center;">
+            <div class="form-group" style="flex-grow: 1;">
+              <label for="set-color-primary">Primary Brand Color *</label>
+              <input type="color" id="set-color-primary" style="height: 40px; padding: 2px; width: 100%;">
+            </div>
+            <div class="form-group" style="flex-grow: 1;">
+              <label for="set-color-secondary">Secondary Layout Color *</label>
+              <input type="color" id="set-color-secondary" style="height: 40px; padding: 2px; width: 100%;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Credentials -->
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;">5. Admin Login Credentials</h3>
+        <div class="form-grid" style="margin-bottom: 25px;">
+          <div class="form-group">
+            <label for="set-admin-email">Admin Login Email *</label>
+            <input type="email" id="set-admin-email" required placeholder="admin@techzone.com">
+          </div>
+          <div class="form-group">
+            <label for="set-admin-password">Admin Login Password *</label>
+            <input type="password" id="set-admin-password" required placeholder="admin123" minlength="4">
+          </div>
+        </div>
+
+        <!-- Save Button -->
+        <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-admin); padding-top: 25px;">
+          <button type="submit" class="btn btn-primary" id="btn-save-settings">Save Website Settings</button>
+        </div>
+      </form>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../frontend/js/api.js"></script>
+  <script src="../frontend/js/common.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/settings.js"></script>
+</body>
+</html>

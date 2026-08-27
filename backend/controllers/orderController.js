@@ -1,0 +1,192 @@
+const Order = require('../models/Order');
+const Product = require('../models/Product');
+
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    return res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error retrieving orders'
+    });
+  }
+};
+
+exports.getOrderById = async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const { id } = req.params;
+
+    const query = mongoose.Types.ObjectId.isValid(id) ? { _id: id } : { orderNumber: id };
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order receipt not found'
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      order
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error fetching order details'
+    });
+  }
+};
+
+exports.createOrder = async (req, res) => {
+  try {
+    const {
+      customerName,
+      mobile,
+      email,
+      products,
+      subtotal,
+      deliveryCharge,
+      discount,
+      total,
+      paymentMethod,
+      address,
+      city,
+      state,
+      pincode,
+      orderNotes
+    } = req.body;
+
+    if (!products || products.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order items are required.'
+      });
+    }
+
+    // 1. Generate Unique Order Number
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const randStr = Math.floor(1000 + Math.random() * 9000);
+    const orderNumber = `ORD-${dateStr}-${randStr}`;
+
+    // 2. Validate Stock and Deduct
+    for (const item of products) {
+      const prod = await Product.findById(item.id);
+      if (!prod) {
+        return res.status(400).json({
+          success: false,
+          message: `Product ${item.name} not found in database.`
+        });
+      }
+      if (prod.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${prod.name}. Only ${prod.stock} units available.`
+        });
+      }
+    }
+
+    // Deduct stock after validation
+    for (const item of products) {
+      await Product.findByIdAndUpdate(item.id, {
+        $inc: { stock: -item.quantity }
+      });
+    }
+
+    // 3. Create Order
+    const newOrder = new Order({
+      orderNumber,
+      customerName,
+      mobile,
+      email,
+      products,
+      subtotal: Number(subtotal),
+      deliveryCharge: Number(deliveryCharge),
+      discount: Number(discount) || 0,
+      total: Number(total),
+      paymentMethod: paymentMethod || 'Cash on Delivery (COD)',
+      address,
+      city,
+      state,
+      pincode,
+      orderNotes: orderNotes || ''
+    });
+
+    await newOrder.save();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Order placed successfully',
+      order: newOrder
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Server error placing order'
+    });
+  }
+};
+
+exports.updateOrderStatus = async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const query = mongoose.Types.ObjectId.isValid(id) ? { _id: id } : { orderNumber: id };
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    const oldStatus = order.status;
+
+    // Restore stock if transitioning to Cancelled
+    if (status === 'Cancelled' && oldStatus !== 'Cancelled') {
+      for (const item of order.products) {
+        await Product.findByIdAndUpdate(item.id, {
+          $inc: { stock: item.quantity }
+        });
+      }
+    }
+
+    // Re-deduct stock if recovering from Cancelled status
+    if (oldStatus === 'Cancelled' && status !== 'Cancelled') {
+      for (const item of order.products) {
+        await Product.findByIdAndUpdate(item.id, {
+          $inc: { stock: -item.quantity }
+        });
+      }
+    }
+
+    order.status = status;
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Order status updated to ${status} successfully.`,
+      order
+    });
+
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error updating order status'
+    });
+  }
+};

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Admin Login | TechZone</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Reuse Customer style.css to get variables, buttons & toast styles -->
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e1e24 0%, #2a2a35 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .login-card {
+      background-color: white;
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 40px;
+      width: 100%;
+      max-width: 420px;
+    }
+    .login-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .login-header h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: var(--secondary-color);
+    }
+    .login-header h2 span {
+      color: var(--primary-color);
+    }
+    .login-header p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-card">
+    <div class="login-header">
+      <h2>TechZone <span>Admin</span></h2>
+      <p>Please enter your email and password to log in</p>
+    </div>
+
+    <form id="admin-login-form" style="display: flex; flex-direction: column; gap: 20px;">
+      <div class="form-group">
+        <label for="login-email">Email Address</label>
+        <input type="email" id="login-email" required placeholder="admin@techzone.com">
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" style="margin-top: 10px;">Log In to Control Panel</button>
+    </form>
+    
+    <div style="margin-top: 25px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 15px;">
+      Default Credentials:<br>
+
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../frontend/js/api.js"></script>
+  <!-- Mini common layer for login screen since common.js loads header/footer which we do NOT want here -->
+  <script>
+    // Global Toast Helper fallback since common.js is not loaded
+    window.showToast = (message, type = 'success') => {
+      let container = document.getElementById('toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+      }
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      let icon = '<i class="fa-solid fa-circle-check"></i>';
+      if (type === 'error') icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+      toast.innerHTML = `${icon} <span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    };
+
+    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const pass = document.getElementById('login-password').value;
+
+      try {
+        const result = await window.api.auth.login(email, pass);
+        window.showToast("Login Successful! Redirecting...", "success");
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+      } catch (err) {
+        window.showToast(err.message, "error");
+      }
+    });
+
+    // Check if already logged in
+    (async () => {
+      const session = await window.api.auth.me();
+      if (session) {
+        window.location.href = 'dashboard.html';
+      }
+    })();
+  </script>
+</body>
+</html>

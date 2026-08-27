@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <title>Add Product | TechZone</title>
+  
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Style guidelines -->
+  <link rel="stylesheet" href="../frontend/css/style.css">
+  <!-- Admin Stylesheet -->
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+  <!-- Sidebar (admin-common.js) -->
+  <nav class="admin-sidebar"></nav>
+
+  <!-- Workspace -->
+  <div class="admin-workspace">
+    <!-- Header (admin-common.js) -->
+    <header class="admin-header"></header>
+
+    <!-- Content -->
+    <main class="admin-content" style="max-width: 900px;">
+      
+      <!-- Back button -->
+      <div style="margin-bottom: 20px;">
+        <a href="products.html" style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;"><i class="fa-solid fa-arrow-left"></i> Back to Products Listing</a>
+      </div>
+
+      <!-- Add form -->
+      <form id="admin-product-form" class="admin-form-box">
+        <h2 class="admin-form-title" id="form-page-title">Add New Mobile Accessory</h2>
+
+        <div class="form-grid">
+          <!-- Name -->
+          <div class="form-group full-width">
+            <label for="prod-name">Product Title Name *</label>
+            <input type="text" id="prod-name" required placeholder="e.g. SuperVOOC 65W Fast Charger">
+          </div>
+
+          <!-- Brand -->
+          <div class="form-group">
+            <label for="prod-brand">Brand</label>
+            <input type="text" id="prod-brand" placeholder="e.g. OnePlus (Optional)">
+          </div>
+
+          <!-- SKU -->
+          <div class="form-group">
+            <label for="prod-sku">SKU Code</label>
+            <input type="text" id="prod-sku" placeholder="e.g. CHG-SV65-OP (Optional)">
+          </div>
+
+          <!-- Category select -->
+          <div class="form-group">
+            <label for="prod-category">Category *</label>
+            <select id="prod-category" required>
+              <option value="">Select Category</option>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+
+          <!-- Stock quantity -->
+          <div class="form-group">
+            <label for="prod-stock">Stock Quantity *</label>
+            <input type="number" id="prod-stock" required min="0" value="10">
+          </div>
+
+          <!-- Price -->
+          <div class="form-group">
+            <label for="prod-price">Original Price (₹) *</label>
+            <input type="number" id="prod-price" required min="0" placeholder="e.g. 1999">
+          </div>
+
+          <!-- Discount Price -->
+          <div class="form-group">
+            <label for="prod-discount-price">Discounted Offer Price (₹)</label>
+            <input type="number" id="prod-discount-price" min="0" placeholder="e.g. 1299 (Optional)">
+          </div>
+
+          <!-- Description -->
+          <div class="form-group full-width">
+            <label for="prod-desc">Product Description</label>
+            <textarea id="prod-desc" placeholder="Describe details, benefits, dimensions, compatibility features... (Optional)" style="height: 120px;"></textarea>
+          </div>
+
+          <!-- Tags -->
+          <div class="form-group full-width">
+            <label for="prod-tags">Tags (Comma-separated)</label>
+            <input type="text" id="prod-tags" placeholder="e.g. fast charger, Type-C plug, OnePlus charger">
+          </div>
+        </div>
+
+        <!-- Specifications Builder -->
+        <div style="margin-top: 30px;">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;">Specifications</h3>
+          
+          <div id="specs-builder-container">
+            <!-- Dynamic rows will look like this:
+            <div class="spec-builder-row">
+              <input type="text" placeholder="Spec Name (e.g. Output)">
+              <input type="text" placeholder="Spec Value (e.g. 65W Max)">
+              <button class="btn btn-outline" style="color:var(--danger);"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            -->
+          </div>
+
+          <button type="button" class="btn btn-outline btn-sm" id="btn-add-spec-row" style="margin-top: 10px;"><i class="fa-solid fa-plus"></i> Add Spec Row</button>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div style="margin-top: 35px;">
+          <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;">Product Images</h3>
+          
+          <!-- Image Paste option -->
+          <div class="form-group" style="margin-bottom: 15px;">
+            <label for="prod-image-url-input">Paste Image Link URL (Option 1)</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="url" id="prod-image-url-input" placeholder="https://unsplash.com/... or cloudinary url" style="flex-grow: 1; padding: 10px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm);">
+              <button type="button" class="btn btn-outline btn-sm" id="btn-add-image-url">Add URL</button>
+            </div>
+          </div>
+
+          <!-- File selector option -->
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label>Upload Files from Device (Option 2)</label>
+            <div class="admin-image-upload-card" id="upload-files-trigger-card">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 10px;"></i>
+              <p style="font-weight: 600;">Tap to upload images</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Supports PNG, JPG (Max size 1.5MB per image)</p>
+              <input type="file" id="prod-file-input" multiple accept="image/*" style="display: none;">
+            </div>
+          </div>
+
+          <!-- Uploaded images thumbs panel -->
+          <div class="admin-uploaded-previews" id="prod-images-previews-container">
+            <!-- Thumbs load here -->
+          </div>
+        </div>
+
+        <!-- Highlights Flags & Status -->
+        <div class="form-grid" style="margin-top: 35px; border-top: 1px solid var(--border-admin); padding-top: 25px;">
+          <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; border: 1px solid var(--border-admin); padding: 15px; border-radius: var(--border-radius-md);">
+            <div>
+              <strong style="display: block; font-size: 0.9rem;">Featured Product</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Display in the Featured section on Homepage.</span>
+            </div>
+            <label class="admin-switch">
+              <input type="checkbox" id="prod-flag-featured">
+              <span class="admin-slider"></span>
+            </label>
+          </div>
+
+          <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; border: 1px solid var(--border-admin); padding: 15px; border-radius: var(--border-radius-md);">
+            <div>
+              <strong style="display: block; font-size: 0.9rem;">Best Seller</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Display in Bestsellers grids & detail badges.</span>
+            </div>
+            <label class="admin-switch">
+              <input type="checkbox" id="prod-flag-bestseller">
+              <span class="admin-slider"></span>
+            </label>
+          </div>
+
+          <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; border: 1px solid var(--border-admin); padding: 15px; border-radius: var(--border-radius-md);">
+            <div>
+              <strong style="display: block; font-size: 0.9rem;">New Arrival</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Flag as a new arrival on customer web.</span>
+            </div>
+            <label class="admin-switch">
+              <input type="checkbox" id="prod-flag-newarrival" checked>
+              <span class="admin-slider"></span>
+            </label>
+          </div>
+
+          <div class="form-group" style="flex-direction: row; align-items: center; justify-content: space-between; border: 1px solid var(--border-admin); padding: 15px; border-radius: var(--border-radius-md);">
+            <div>
+              <strong style="display: block; font-size: 0.9rem;">Product Status</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Toggle Active to list, Inactive to hide.</span>
+            </div>
+            <label class="admin-switch">
+              <input type="checkbox" id="prod-status-active" checked>
+              <span class="admin-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div style="margin-top: 40px; display: flex; justify-content: flex-end; gap: 15px;">
+          <a href="products.html" class="btn btn-outline">Cancel</a>
+          <button type="submit" class="btn btn-primary" id="btn-submit-product-form">Save Product</button>
+        </div>
+
+      </form>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../frontend/js/api.js"></script>
+  <script src="../frontend/js/common.js"></script>
+  <script src="js/admin-common.js"></script>
+  <script src="js/product-form.js"></script>
+</body>
+</html>
