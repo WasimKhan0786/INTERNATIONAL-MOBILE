@@ -51,13 +51,6 @@ I have just placed an order on your website. Please find my order details below:
 👤 *CUSTOMER DETAILS:*
 • *Name:* ${order.customerName}
 • *Mobile:* ${order.mobile}
-• *Email:* ${order.email || 'N/A'}
-
-📦 *DELIVERY ADDRESS:*
-${order.address},
-${order.city}, ${order.state} - ${order.pincode}
-
-🗒️ *Order Notes:* ${order.orderNotes || 'None'}
 
 🛒 *ORDERED ITEMS:*
 ${itemsText}

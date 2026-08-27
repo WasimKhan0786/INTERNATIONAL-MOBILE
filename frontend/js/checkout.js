@@ -72,30 +72,24 @@ async function handlePlaceOrder(e) {
 
   const name = document.getElementById('cust-name').value.trim();
   const mobile = document.getElementById('cust-mobile').value.trim();
-  const email = document.getElementById('cust-email').value.trim();
-  const address = document.getElementById('cust-address').value.trim();
-  const city = document.getElementById('cust-city').value.trim();
-  const state = document.getElementById('cust-state').value.trim();
-  const pincode = document.getElementById('cust-pincode').value.trim();
-  const notes = document.getElementById('cust-notes').value.trim();
 
   const cartItems = window.cart.get();
 
   const orderPayload = {
     customerName: name,
     mobile: mobile,
-    email: email,
+    email: '',
     products: cartItems,
     subtotal: subtotalVal,
     deliveryCharge: deliveryVal,
     discount: 0,
     total: totalVal,
     paymentMethod: 'Cash on Delivery (COD)',
-    address: address,
-    city: city,
-    state: state,
-    pincode: pincode,
-    orderNotes: notes
+    address: 'N/A',
+    city: 'N/A',
+    state: 'N/A',
+    pincode: 'N/A',
+    orderNotes: ''
   };
 
   try {

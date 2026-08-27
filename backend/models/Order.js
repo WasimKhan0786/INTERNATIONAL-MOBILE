@@ -50,7 +50,6 @@ const OrderSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true,
     trim: true
   },
   products: [OrderItemSchema],
@@ -79,20 +78,16 @@ const OrderSchema = new mongoose.Schema({
     default: 'Cash on Delivery (COD)'
   },
   address: {
-    type: String,
-    required: true
+    type: String
   },
   city: {
-    type: String,
-    required: true
+    type: String
   },
   state: {
-    type: String,
-    required: true
+    type: String
   },
   pincode: {
-    type: String,
-    required: true
+    type: String
   },
   orderNotes: {
     type: String,
