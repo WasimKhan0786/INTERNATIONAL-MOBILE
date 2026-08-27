@@ -36,6 +36,23 @@ async function loadDashboardData() {
       .reduce((sum, o) => sum + o.total, 0);
     document.getElementById('stat-revenue-val').textContent = `₹${revenueVal.toLocaleString('en-IN')}`;
 
+    // Today's metrics calculation
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const todayOrders = orders.filter(o => {
+      const orderDate = new Date(o.createdAt);
+      return orderDate >= startOfToday;
+    });
+
+    const todayOrdersCount = todayOrders.length;
+    const todayRevenueVal = todayOrders
+      .filter(o => o.status !== 'Cancelled')
+      .reduce((sum, o) => sum + o.total, 0);
+
+    document.getElementById('stat-today-orders-val').textContent = `Today's: ${todayOrdersCount}`;
+    document.getElementById('stat-today-revenue-val').textContent = `Today's: ₹${todayRevenueVal.toLocaleString('en-IN')}`;
+
     // 3. Render Recent Orders (limit 5)
     renderRecentOrders(orders.slice(0, 5));
 
@@ -94,8 +111,8 @@ function renderLowStock(products) {
   const container = document.getElementById('dashboard-low-stock-list');
   if (!container) return;
 
-  // Filter items in stock but less than 10 units
-  const lowStockItems = products.filter(p => p.stock > 0 && p.stock < 10).sort((a,b) => a.stock - b.stock);
+  // Filter items that are low stock (less than 10 units, including out of stock)
+  const lowStockItems = products.filter(p => p.stock < 10).sort((a,b) => a.stock - b.stock);
 
   container.innerHTML = '';
   
@@ -112,12 +129,19 @@ function renderLowStock(products) {
     item.style.padding = '8px 0';
     item.style.borderBottom = '1px solid var(--border-admin)';
     
+    let badgeClass = 'admin-badge-warning';
+    let badgeText = `${prod.stock} Left`;
+    if (prod.stock <= 0) {
+      badgeClass = 'admin-badge-danger';
+      badgeText = 'Out of Stock';
+    }
+
     item.innerHTML = `
       <div style="flex-grow: 1; min-width: 0; padding-right: 10px;">
         <span style="font-weight: 600; font-size: 0.85rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${prod.name}</span>
         <span style="font-size: 0.75rem; color: var(--text-muted);">Brand: ${prod.brand} | SKU: ${prod.sku}</span>
       </div>
-      <span class="admin-badge admin-badge-warning" style="flex-shrink: 0; font-weight: 800;">${prod.stock} Left</span>
+      <span class="admin-badge ${badgeClass}" style="flex-shrink: 0; font-weight: 800;">${badgeText}</span>
     `;
     container.appendChild(item);
   });

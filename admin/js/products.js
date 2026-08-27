@@ -105,7 +105,7 @@ async function renderProductsTable() {
         <td data-label="SKU" style="font-family:monospace;">${prod.sku}</td>
         <td data-label="Price">${priceText}</td>
         <td data-label="Stock">
-          <span class="admin-badge ${stockClass}">${prod.stock} Units</span>
+          <span class="admin-badge ${stockClass}">${prod.stock <= 0 ? 'Out of Stock' : `${prod.stock} Units`}</span>
         </td>
         <td data-label="Highlights">${highlightsHtml}</td>
         <td data-label="Status">
