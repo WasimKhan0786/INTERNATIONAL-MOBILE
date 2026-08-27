@@ -33,9 +33,14 @@ async function initializeOrdersPage() {
     modalCloseBtn.addEventListener('click', closeOrderModal);
   }
 
-  const updateStatusBtn = document.getElementById('btn-update-order-status');
-  if (updateStatusBtn) {
-    updateStatusBtn.addEventListener('click', handleUpdateOrderStatus);
+  const saveChangesBtn = document.getElementById('btn-save-order-changes');
+  if (saveChangesBtn) {
+    saveChangesBtn.addEventListener('click', handleSaveOrderChanges);
+  }
+
+  const deleteBtn = document.getElementById('btn-delete-order-action');
+  if (deleteBtn) {
+    deleteBtn.addEventListener('click', handleDeleteOrder);
   }
 
   // 4. Check if direct URL query exists (e.g. ?id=ORD-xxxx or ?status=Pending)
@@ -133,10 +138,11 @@ function openOrderModal(order) {
   document.getElementById('modal-order-title').textContent = `Order Details: ${order.id}`;
 
   // Fill text info
-  document.getElementById('modal-cust-name').innerHTML = `${order.customerName} <br><span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted);">Shop: ${order.shopName || 'N/A'}</span>`;
-  document.getElementById('modal-cust-mobile').textContent = order.mobile;
-  document.getElementById('modal-cust-email').textContent = order.email;
-  document.getElementById('modal-cust-address').textContent = `${order.address}, ${order.city}, ${order.state} - ${order.pincode}`;
+  document.getElementById('modal-cust-name').value = order.customerName || '';
+  document.getElementById('modal-cust-shop').value = order.shopName || '';
+  document.getElementById('modal-cust-mobile').value = order.mobile || '';
+  document.getElementById('modal-cust-email').textContent = order.email || 'N/A';
+  document.getElementById('modal-cust-address').textContent = `${order.address || 'N/A'}, ${order.city || 'N/A'}, ${order.state || 'N/A'} - ${order.pincode || 'N/A'}`;
 
   const dateStr = new Date(order.createdAt).toLocaleString('en-IN', {
     dateStyle: 'medium',
@@ -187,19 +193,56 @@ function closeOrderModal() {
   selectedOrder = null;
 }
 
-async function handleUpdateOrderStatus() {
+async function handleSaveOrderChanges() {
   if (!selectedOrder) return;
 
   const select = document.getElementById('modal-status-select');
   const newStatus = select.value;
 
+  const name = document.getElementById('modal-cust-name').value.trim();
+  const shop = document.getElementById('modal-cust-shop').value.trim();
+  const mobile = document.getElementById('modal-cust-mobile').value.trim();
+
+  if (!name || !shop || !mobile) {
+    window.showToast("Name, Shop Name, and Mobile Number are required.", "error");
+    return;
+  }
+
   try {
-    await window.api.orders.updateStatus(selectedOrder.id, newStatus);
-    window.showToast(`Order status updated to ${newStatus}`, "success");
+    // 1. Update Status if it changed
+    if (selectedOrder.status !== newStatus) {
+      await window.api.orders.updateStatus(selectedOrder.id, newStatus);
+    }
+
+    // 2. Update Customer Details (Rename/Shop/Mobile)
+    await window.api.orders.updateDetails(selectedOrder.id, {
+      customerName: name,
+      shopName: shop,
+      mobile: mobile
+    });
+
+    window.showToast("Order changes saved successfully.", "success");
     closeOrderModal();
     renderOrdersTable(); // Refresh table grid
   } catch (err) {
     console.error(err);
-    window.showToast("Failed to update status", "error");
+    window.showToast("Failed to save changes", "error");
+  }
+}
+
+async function handleDeleteOrder() {
+  if (!selectedOrder) return;
+
+  const confirmDelete = confirm("Are you sure you want to permanently delete this order? This action cannot be undone.");
+  if (!confirmDelete) return;
+
+  try {
+    await window.api.orders.delete(selectedOrder.id);
+    window.showToast("Order deleted successfully", "success");
+    closeOrderModal();
+    renderOrdersTable(); // Refresh table grid
+  } catch (err) {
+    console.error(err);
+    window.showToast("Failed to delete order", "error");
   }
 }

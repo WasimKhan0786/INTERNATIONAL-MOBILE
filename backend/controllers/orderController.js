@@ -192,3 +192,78 @@ exports.updateOrderStatus = async (req, res) => {
     });
   }
 };
+
+exports.updateOrderDetails = async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const { id } = req.params;
+    const { customerName, shopName, mobile } = req.body;
+
+    const query = mongoose.Types.ObjectId.isValid(id) ? { _id: id } : { orderNumber: id };
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    if (customerName !== undefined) order.customerName = customerName;
+    if (shopName !== undefined) order.shopName = shopName;
+    if (mobile !== undefined) order.mobile = mobile;
+
+    await order.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Order details updated successfully.',
+      order
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error updating order details'
+    });
+  }
+};
+
+exports.deleteOrder = async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const { id } = req.params;
+
+    const query = mongoose.Types.ObjectId.isValid(id) ? { _id: id } : { orderNumber: id };
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    // Restore stock if deleting a non-cancelled order
+    if (order.status !== 'Cancelled') {
+      for (const item of order.products) {
+        await Product.findByIdAndUpdate(item.id, {
+          $inc: { stock: item.quantity }
+        });
+      }
+    }
+
+    await Order.findByIdAndDelete(order._id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Order deleted successfully'
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error deleting order'
+    });
+  }
+};

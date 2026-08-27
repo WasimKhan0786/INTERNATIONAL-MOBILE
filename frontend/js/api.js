@@ -315,6 +315,32 @@ const api = {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error updating order status.');
       return data.order;
+    },
+
+    updateDetails: async (id, orderData) => {
+      const res = await fetch(`${BASE_URL}/orders/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify(orderData)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error updating order details.');
+      return data.order;
+    },
+
+    delete: async (id) => {
+      const res = await fetch(`${BASE_URL}/orders/${id}`, {
+        method: 'DELETE',
+        headers: {
+          ...getAuthHeaders()
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error deleting order.');
+      return data;
     }
   },
 

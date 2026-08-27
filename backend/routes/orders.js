@@ -10,5 +10,7 @@ router.post('/', orderController.createOrder);
 router.get('/', protect, orderController.getAllOrders);
 router.get('/:id', protect, orderController.getOrderById);
 router.put('/:id/status', protect, orderController.updateOrderStatus);
+router.put('/:id', protect, orderController.updateOrderDetails);
+router.delete('/:id', protect, orderController.deleteOrder);
 
 module.exports = router;
