@@ -106,6 +106,20 @@ const api = {
       return data.product;
     },
 
+    bulkUpload: async (productsList) => {
+      const res = await fetch(`${BASE_URL}/products/bulk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify({ products: productsList })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Bulk upload failed.');
+      return data;
+    },
+
     update: async (id, productData) => {
       const res = await fetch(`${BASE_URL}/products/${id}`, {
         method: 'PUT',

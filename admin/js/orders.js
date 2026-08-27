@@ -2,6 +2,7 @@
 
 let activeStatusFilter = '';
 let selectedOrder = null;
+let currentOrdersList = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Sync page load with auth checks
@@ -25,6 +26,12 @@ async function initializeOrdersPage() {
       activeStatusFilter = e.target.value;
       renderOrdersTable();
     });
+  }
+
+  // Bind Export button
+  const exportBtn = document.getElementById('btn-export-orders');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportOrdersToCSV);
   }
 
   // 3. Bind Modal events
@@ -69,6 +76,8 @@ async function renderOrdersTable() {
     if (activeStatusFilter) {
       orders = orders.filter(o => o.status === activeStatusFilter);
     }
+
+    currentOrdersList = orders; // Save to global variable for export
 
     if (orders.length === 0) {
       tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 40px 0;">No orders found matching the filter status.</td></tr>`;
@@ -245,4 +254,64 @@ async function handleDeleteOrder() {
     console.error(err);
     window.showToast("Failed to delete order", "error");
   }
+}
+
+function exportOrdersToCSV() {
+  if (currentOrdersList.length === 0) {
+    window.showToast("No orders available to export.", "warning");
+    return;
+  }
+
+  const headers = [
+    'Order ID', 'Customer Name', 'Shop Name', 'Mobile Number', 'Email', 
+    'Products (Items)', 'Subtotal (INR)', 'Delivery Charge', 'Discount', 'Total Amount (INR)', 
+    'Payment Method', 'Shipping Address', 'City', 'State', 'Pincode', 'Status', 'Date'
+  ];
+
+  let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+  csvContent += headers.join(",") + "\n";
+
+  currentOrdersList.forEach(order => {
+    const itemsStr = order.products.map(p => `${p.name} [Qty: ${p.quantity}]`).join("; ");
+    const dateStr = new Date(order.createdAt).toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+
+    const row = [
+      order.id,
+      order.customerName,
+      order.shopName || '',
+      order.mobile,
+      order.email || '',
+      itemsStr,
+      order.subtotal.toString(),
+      order.deliveryCharge.toString(),
+      order.discount.toString(),
+      order.total.toString(),
+      order.paymentMethod || 'Cash on Delivery (COD)',
+      order.address || '',
+      order.city || '',
+      order.state || '',
+      order.pincode || '',
+      order.status,
+      dateStr
+    ];
+
+    const escapedRow = row.map(val => {
+      const clean = val.replace(/"/g, '""');
+      return clean.includes(',') || clean.includes(';') || clean.includes('\n') ? `"${clean}"` : clean;
+    });
+    csvContent += escapedRow.join(",") + "\n";
+  });
+
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", `orders_database_${new Date().toISOString().slice(0, 10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.showToast("Orders database exported successfully!", "success");
 }

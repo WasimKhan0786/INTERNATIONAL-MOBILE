@@ -62,6 +62,28 @@ async function loadDashboardData() {
     // 5. Render Bestsellers List
     renderBestsellersList(products);
 
+    // 6. Render Top Phone Models Chart
+    renderPhoneModelsChart(orders);
+
+    // 7. Inject Critical Stock Warning Banner
+    const criticalItems = products.filter(p => p.stock <= 5);
+    const bannerHolder = document.getElementById('critical-banner-holder');
+    if (bannerHolder) {
+      if (criticalItems.length > 0) {
+        bannerHolder.innerHTML = `
+          <div class="critical-alert-banner">
+            <div class="critical-banner-content">
+              <i class="fa-solid fa-triangle-exclamation critical-banner-icon"></i>
+              <span>Attention: <strong>${criticalItems.length}</strong> accessories are critically low on stock (&le; 5 units) or out of stock!</span>
+            </div>
+            <a href="products.html" class="btn btn-sm btn-outline" style="color: var(--danger); border-color: var(--danger); background: transparent; padding: 6px 12px; font-size: 0.8rem; font-weight: 600;">Update Stock</a>
+          </div>
+        `;
+      } else {
+        bannerHolder.innerHTML = '';
+      }
+    }
+
   } catch (err) {
     console.error("Dashboard loading error", err);
   }
@@ -130,9 +152,15 @@ function renderLowStock(products) {
     item.style.borderBottom = '1px solid var(--border-admin)';
     
     let badgeClass = 'admin-badge-warning';
-    let badgeText = `${prod.stock} Left`;
+    let badgeText = `Warning: ${prod.stock} Left`;
+    
+    if (prod.stock <= 5) {
+      badgeClass = 'admin-badge-critical';
+      badgeText = `CRITICAL: ${prod.stock} Left`;
+    }
+    
     if (prod.stock <= 0) {
-      badgeClass = 'admin-badge-danger';
+      badgeClass = 'admin-badge-critical';
       badgeText = 'Out of Stock';
     }
 
@@ -141,7 +169,7 @@ function renderLowStock(products) {
         <span style="font-weight: 600; font-size: 0.85rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${prod.name}</span>
         <span style="font-size: 0.75rem; color: var(--text-muted);">Brand: ${prod.brand} | SKU: ${prod.sku}</span>
       </div>
-      <span class="admin-badge ${badgeClass}" style="flex-shrink: 0; font-weight: 800;">${badgeText}</span>
+      <span class="admin-badge ${badgeClass}" style="flex-shrink: 0; font-weight: 800; font-size: 0.7rem; padding: 4px 8px;">${badgeText}</span>
     `;
     container.appendChild(item);
   });
@@ -177,4 +205,83 @@ function renderBestsellersList(products) {
     `;
     container.appendChild(item);
   });
+}
+
+function renderPhoneModelsChart(orders) {
+  const container = document.getElementById('dashboard-phone-models-chart');
+  if (!container) return;
+
+  const salesMap = {};
+  
+  orders.forEach(order => {
+    if (order.status === 'Cancelled') return;
+    
+    order.products.forEach(item => {
+      const qty = item.quantity || 1;
+      const model = extractPhoneModel(item.name);
+      salesMap[model] = (salesMap[model] || 0) + qty;
+    });
+  });
+
+  const sortedModels = Object.entries(salesMap)
+    .map(([name, sales]) => ({ name, sales }))
+    .sort((a, b) => b.sales - a.sales);
+
+  container.innerHTML = '';
+
+  if (sortedModels.length === 0) {
+    container.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0;">No phone accessory sales recorded yet.</div>`;
+    return;
+  }
+
+  const maxSales = sortedModels[0].sales;
+
+  sortedModels.slice(0, 5).forEach(m => {
+    const pct = maxSales > 0 ? Math.round((m.sales / maxSales) * 100) : 0;
+    
+    const row = document.createElement('div');
+    row.className = 'model-chart-row';
+    row.innerHTML = `
+      <div class="model-name" title="${m.name}">${m.name}</div>
+      <div class="model-bar-wrapper">
+        <div class="model-bar-progress" style="width: ${pct}%"></div>
+      </div>
+      <div class="model-count">${m.sales} Sold</div>
+    `;
+    container.appendChild(row);
+  });
+}
+
+function extractPhoneModel(productName) {
+  const name = productName.toLowerCase();
+  
+  const iphoneMatch = productName.match(/iphone\s+\d+\s*(?:pro\s*max|pro|plus|mini)?/i);
+  if (iphoneMatch) {
+    return iphoneMatch[0].replace(/iphone/i, 'iPhone');
+  }
+  
+  const samsungSMatch = productName.match(/(?:s\d{2}|galaxy\s+s\d{2})\s*(?:ultra|\+|\b)/i);
+  if (samsungSMatch) {
+    let raw = samsungSMatch[0].toUpperCase();
+    if (!raw.startsWith('GALAXY')) raw = 'Galaxy ' + raw;
+    return 'Samsung ' + raw;
+  }
+
+  const pixelMatch = productName.match(/pixel\s+\d+\s*(?:pro|a)?/i);
+  if (pixelMatch) {
+    return 'Google ' + pixelMatch[0].replace(/pixel/i, 'Pixel');
+  }
+  
+  const oneplusMatch = productName.match(/oneplus\s+\d+\s*(?:pro|t|r)?/i);
+  if (oneplusMatch) {
+    return oneplusMatch[0].replace(/oneplus/i, 'OnePlus');
+  }
+  
+  if (name.includes('iphone')) return 'iPhone (General)';
+  if (name.includes('samsung') || name.includes('galaxy')) return 'Samsung (General)';
+  if (name.includes('oneplus')) return 'OnePlus (General)';
+  if (name.includes('pixel')) return 'Google Pixel (General)';
+  if (name.includes('charger') || name.includes('adapter')) return 'Chargers / Power';
+  
+  return 'Other Accessories';
 }

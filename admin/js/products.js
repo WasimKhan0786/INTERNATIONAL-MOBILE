@@ -176,3 +176,240 @@ function formatSlugName(slug) {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+// Bulk Import Handler
+(function() {
+  const modal = document.getElementById('bulk-import-modal');
+  const triggerBtn = document.getElementById('btn-bulk-upload-trigger');
+  const closeBtn = document.getElementById('bulk-import-modal-close');
+  const dropZone = document.getElementById('csv-drop-zone');
+  const fileInput = document.getElementById('csv-file-input');
+  const parsedInfo = document.getElementById('csv-parsed-info');
+  const downloadTemplateBtn = document.getElementById('btn-download-template');
+  const submitBtn = document.getElementById('btn-submit-import');
+
+  let parsedProductsList = [];
+
+  if (!modal) return;
+
+  triggerBtn.addEventListener('click', () => {
+    modal.classList.add('open');
+    resetModalState();
+  });
+
+  const closeModal = () => {
+    modal.classList.remove('open');
+    resetModalState();
+  };
+
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  function resetModalState() {
+    parsedProductsList = [];
+    if (fileInput) fileInput.value = '';
+    parsedInfo.style.display = 'none';
+    parsedInfo.innerHTML = '';
+    submitBtn.disabled = true;
+    dropZone.innerHTML = `
+      <i class="fa-solid fa-cloud-arrow-up"></i>
+      <p><strong>Click to browse</strong> or drag & drop CSV file here</p>
+      <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+    `;
+    const newFileInput = dropZone.querySelector('#csv-file-input');
+    newFileInput.addEventListener('change', handleFileSelect);
+  }
+
+  dropZone.addEventListener('click', (e) => {
+    const input = dropZone.querySelector('#csv-file-input');
+    if (e.target !== input) {
+      input.click();
+    }
+  });
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragover');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragover');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const input = dropZone.querySelector('#csv-file-input');
+      input.files = files;
+      handleFile(files[0]);
+    }
+  });
+
+  function handleFileSelect(e) {
+    const files = e.target.files;
+    if (files.length > 0) {
+      handleFile(files[0]);
+    }
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', handleFileSelect);
+  }
+
+  function handleFile(file) {
+    if (!file.name.endsWith('.csv')) {
+      window.showToast("Please upload a valid .csv file.", "error");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      try {
+        parsedProductsList = parseCSV(text);
+        
+        if (parsedProductsList.length === 0) {
+          window.showToast("No products found in the CSV. Make sure headers are correct.", "warning");
+          return;
+        }
+
+        parsedInfo.style.display = 'block';
+        parsedInfo.innerHTML = `
+          <div class="csv-file-info">
+            <span><i class="fa-solid fa-circle-check"></i> ${file.name} (${(file.size / 1024).toFixed(1)} KB)</span>
+            <strong>${parsedProductsList.length} products found</strong>
+          </div>
+        `;
+        
+        dropZone.innerHTML = `
+          <i class="fa-solid fa-file-csv" style="color: var(--success);"></i>
+          <p style="color: var(--success); font-weight: 600;">File loaded successfully!</p>
+          <p style="font-size: 0.75rem; color: var(--text-muted);">Click to change file</p>
+          <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+        `;
+        const newFileInput = dropZone.querySelector('#csv-file-input');
+        newFileInput.addEventListener('change', handleFileSelect);
+
+        submitBtn.disabled = false;
+      } catch (err) {
+        console.error(err);
+        window.showToast("Failed to parse CSV file. Check formatting.", "error");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function parseCSV(text) {
+    const lines = [];
+    let row = [""];
+    let inQuotes = false;
+
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      const next = text[i+1];
+      if (c === '"') {
+        if (inQuotes && next === '"') {
+          row[row.length - 1] += '"';
+          i++;
+        } else {
+          inQuotes = !inQuotes;
+        }
+      } else if (c === ',' && !inQuotes) {
+        row.push('');
+      } else if ((c === '\r' || c === '\n') && !inQuotes) {
+        if (c === '\r' && next === '\n') {
+          i++;
+        }
+        lines.push(row);
+        row = [''];
+      } else {
+        row[row.length - 1] += c;
+      }
+    }
+    if (row.length > 1 || row[0] !== '') {
+      lines.push(row);
+    }
+    
+    if (lines.length === 0) return [];
+    
+    const headers = lines[0].map(h => h.trim().toLowerCase());
+    const parsedProducts = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const values = lines[i];
+      if (values.length < headers.length) continue;
+      
+      const p = {};
+      for (let j = 0; j < headers.length; j++) {
+        const header = headers[j];
+        const value = values[j] ? values[j].trim() : '';
+        p[header] = value;
+      }
+      
+      if (p.name) {
+        parsedProducts.push({
+          name: p.name,
+          sku: p.sku || '',
+          categorySlug: p.categoryslug || p.categorySlug || 'accessories',
+          brand: p.brand || '',
+          price: p.price ? parseFloat(p.price) : 0,
+          discountPrice: p.discountprice || p.discountPrice ? parseFloat(p.discountprice || p.discountPrice) : null,
+          stock: p.stock ? parseInt(p.stock, 10) : 0,
+          tags: p.tags ? p.tags.split(';').map(t => t.trim()).filter(Boolean) : [],
+          description: p.description || '',
+          images: p.images ? p.images.split(';').map(u => u.trim()).filter(Boolean) : []
+        });
+      }
+    }
+    return parsedProducts;
+  }
+
+  downloadTemplateBtn.addEventListener('click', () => {
+    const headers = ['name', 'sku', 'categorySlug', 'brand', 'price', 'discountPrice', 'stock', 'tags', 'description', 'images'];
+    const sampleData = [
+      ['iPhone 15 Frosted Case', 'COV-IP15M-SP', 'accessories', 'Spigen', '1299', '699', '100', 'iphone 15 cover;spigen case;frosted cover', 'Ultra-thin protective cover with soft TPU bumper guards.', 'https://images.unsplash.com/photo-1603302576837-37561b2e2302'],
+      ['Samsung S24 Liquid Silicone Cover', 'COV-S24US-SM', 'accessories', 'Samsung', '1499', '899', '50', 's24 ultra cover;silicone case;soft cover', 'Silky-smooth soft liquid silicone cover protecting against drops and dirt.', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe']
+    ];
+    
+    let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += headers.join(",") + "\n";
+    sampleData.forEach(row => {
+      const escapedRow = row.map(val => {
+        const clean = val.replace(/"/g, '""');
+        return clean.includes(',') || clean.includes('\n') ? `"${clean}"` : clean;
+      });
+      csvContent += escapedRow.join(",") + "\n";
+    });
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "bulk_products_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+
+  submitBtn.addEventListener('click', async () => {
+    if (parsedProductsList.length === 0) return;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Importing...';
+
+    try {
+      const response = await window.api.products.bulkUpload(parsedProductsList);
+      window.showToast(response.message || "Bulk import completed successfully!", "success");
+      closeModal();
+      renderProductsTable();
+    } catch (err) {
+      console.error(err);
+      window.showToast(err.message || "Bulk import failed.", "error");
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Import Products';
+    }
+  });
+})();

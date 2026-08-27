@@ -168,6 +168,34 @@
   <!-- Footer -->
   <footer></footer>
 
+  <!-- WhatsApp Order Customer Details Modal -->
+  <div class="modal-overlay" id="whatsapp-order-modal">
+    <div class="modal-content" style="max-width: 420px; width: 90%;">
+      <div class="modal-header" style="font-size: 1.15rem; font-weight: 700; color: var(--text-dark); border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+        <span><i class="fa-brands fa-whatsapp" style="color: #25d366; font-size: 1.3rem; margin-right: 5px;"></i> WhatsApp Order Details</span>
+        <button id="whatsapp-order-modal-close" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+      <div class="modal-body" style="margin-bottom: 0;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.45;">
+          Please enter your name and phone number to initiate the WhatsApp order. We will log your details for inventory updates.
+        </p>
+        <form id="whatsapp-order-details-form">
+          <div class="form-group" style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px;">
+            <label for="wa-cust-name" style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Your Name</label>
+            <input type="text" id="wa-cust-name" required placeholder="e.g. Rahul Verma" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 0.9rem; width: 100%;">
+          </div>
+          <div class="form-group" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 5px;">
+            <label for="wa-cust-phone" style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark);">Mobile Number</label>
+            <input type="tel" id="wa-cust-phone" required pattern="[0-9]{10}" placeholder="10-digit mobile number" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); font-size: 0.9rem; width: 100%;">
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm btn-block" id="btn-wa-modal-submit" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;">
+            <i class="fa-brands fa-whatsapp"></i> Confirm & Order on WhatsApp
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="js/api.js?v=1.0.1"></script>
   <script src="js/common.js?v=1.0.1"></script>

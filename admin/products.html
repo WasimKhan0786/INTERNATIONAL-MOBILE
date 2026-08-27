@@ -43,7 +43,8 @@
           </div>
         </div>
 
-        <div>
+        <div style="display: flex; gap: 10px;">
+          <button id="btn-bulk-upload-trigger" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-excel"></i> Bulk Import</button>
           <a href="add-product.html" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add New Product</a>
         </div>
       </section>
@@ -75,6 +76,40 @@
       </div>
 
     </main>
+  </div>
+
+  <!-- Bulk Import Modal -->
+  <div class="admin-modal" id="bulk-import-modal">
+    <div class="admin-modal-content">
+      <div class="admin-modal-header">
+        <h3 class="admin-modal-title"><i class="fa-solid fa-file-csv"></i> Bulk Products Import</h3>
+        <button class="admin-modal-close" id="bulk-import-modal-close">&times;</button>
+      </div>
+      <div class="admin-modal-body">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+          Upload products and inventories using a CSV template. SKUs already matching existing records will be updated/overwritten automatically.
+        </p>
+        
+        <div class="csv-drop-zone" id="csv-drop-zone">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <p><strong>Click to browse</strong> or drag & drop CSV file here</p>
+          <input type="file" id="csv-file-input" accept=".csv" style="display: none;">
+        </div>
+
+        <div id="csv-parsed-info" style="display: none;">
+          <!-- Loaded dynamically -->
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+          <button class="btn btn-outline btn-sm" id="btn-download-template" style="padding: 8px 12px; font-size: 0.8rem; border-color: var(--border-admin);">
+            <i class="fa-solid fa-download"></i> Sample CSV Template
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-submit-import" disabled style="padding: 8px 16px; font-size: 0.8rem;">
+            <i class="fa-solid fa-upload"></i> Import Products
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Scripts -->

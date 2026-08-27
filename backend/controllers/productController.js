@@ -405,3 +405,112 @@ exports.deleteProduct = async (req, res) => {
     });
   }
 };
+
+exports.bulkUploadProducts = async (req, res) => {
+  try {
+    const { products } = req.body;
+    if (!products || !Array.isArray(products)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid request payload. Expected an array of products.'
+      });
+    }
+
+    const ops = [];
+    let processedCount = 0;
+
+    for (const p of products) {
+      if (!p.name || !p.categorySlug || p.price === undefined || p.stock === undefined) {
+        continue; // skip invalid records
+      }
+
+      const categorySlug = p.categorySlug.toString().toLowerCase().trim().replace(/\s+/g, '-');
+
+      const updateFields = {
+        name: p.name.toString().trim(),
+        description: p.description ? p.description.toString().trim() : '',
+        categorySlug: categorySlug,
+        brand: p.brand ? p.brand.toString().trim() : '',
+        price: Number(p.price),
+        discountPrice: p.discountPrice !== undefined && p.discountPrice !== null && p.discountPrice !== '' ? Number(p.discountPrice) : null,
+        stock: Number(p.stock),
+        tags: Array.isArray(p.tags) ? p.tags : (p.tags ? p.tags.toString().split(',').map(t => t.trim()).filter(Boolean) : []),
+        status: p.status || 'active',
+        featured: p.featured === 'true' || p.featured === true,
+        bestseller: p.bestseller === 'true' || p.bestseller === true,
+        newArrival: p.newArrival !== undefined ? (p.newArrival === 'true' || p.newArrival === true) : true
+      };
+
+      if (p.images) {
+        let imgArray = [];
+        if (Array.isArray(p.images)) {
+          imgArray = p.images.map(img => {
+            if (typeof img === 'string') {
+              return {
+                url: img.trim(),
+                public_id: 'external_url_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)
+              };
+            }
+            return img;
+          });
+        } else if (typeof p.images === 'string' && p.images.trim()) {
+          imgArray = p.images.split(';').map(url => ({
+            url: url.trim(),
+            public_id: 'external_url_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5)
+          }));
+        }
+        if (imgArray.length > 0) {
+          updateFields.images = imgArray;
+        }
+      }
+
+      processedCount++;
+
+      if (p.sku && p.sku.toString().trim()) {
+        const skuStr = p.sku.toString().trim();
+        ops.push({
+          updateOne: {
+            filter: { sku: skuStr },
+            update: { $set: updateFields },
+            upsert: true
+          }
+        });
+      } else {
+        const randomSku = 'SKU-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+        ops.push({
+          insertOne: {
+            document: {
+              ...updateFields,
+              sku: randomSku
+            }
+          }
+        });
+      }
+    }
+
+    if (ops.length > 0) {
+      const result = await Product.bulkWrite(ops);
+      return res.status(200).json({
+        success: true,
+        message: `Bulk import completed. Processed ${processedCount} rows.`,
+        details: {
+          inserted: result.upsertedCount + result.insertedCount,
+          updated: result.modifiedCount,
+          matched: result.matchedCount
+        }
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid products were found to process.'
+      });
+    }
+
+  } catch (err) {
+    console.error('Bulk upload error:', err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Server error processing bulk products upload'
+    });
+  }
+};

@@ -596,14 +596,186 @@ window.cart = cart;
     });
   };
 
+  // 3. Create and Inject Automated Device Detector
+  const injectDeviceDetector = () => {
+    // A. Check if user has already dismissed it within the last 3 days
+    const DISMISS_KEY = 'tz_device_detector_dismissed_time';
+    const COOLDOWN_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
+    const lastDismissed = localStorage.getItem(DISMISS_KEY);
+    if (lastDismissed && (Date.now() - parseInt(lastDismissed, 10) < COOLDOWN_MS)) {
+      return;
+    }
+
+    // B. Detect User Device (Brand & Model)
+    const ua = navigator.userAgent;
+    let brand = "";
+    let model = "";
+    let friendlyName = "";
+    let isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(ua);
+
+    // Only run if it's a mobile device (or emulated mobile)
+    if (!isMobile) return;
+
+    if (/iPhone/i.test(ua)) {
+      brand = "Apple";
+      model = "iPhone";
+      friendlyName = "iPhone";
+    } else if (/iPad/i.test(ua)) {
+      brand = "Apple";
+      model = "iPad";
+      friendlyName = "iPad";
+    } else if (/Android/i.test(ua)) {
+      // Android model extraction from UA
+      const match = ua.match(/Android\s+[^;]+;\s+([^;)]+)/);
+      if (match && match[1]) {
+        model = match[1].trim();
+        // Remove build strings
+        model = model.split(" Build/")[0].split(" build/")[0].trim();
+
+        // Detect brand
+        if (/Samsung/i.test(ua) || /^SM-/i.test(model) || /^GT-/i.test(model)) {
+          brand = "Samsung";
+        } else if (/OnePlus/i.test(ua) || /^OP/i.test(model) || /^CPH/i.test(model)) {
+          brand = "OnePlus";
+        } else if (/Pixel/i.test(ua)) {
+          brand = "Google";
+        } else if (/Redmi|Mi|Xiaomi/i.test(ua)) {
+          brand = "Xiaomi";
+        } else if (/Oppo/i.test(ua)) {
+          brand = "Oppo";
+        } else if (/Vivo/i.test(ua)) {
+          brand = "Vivo";
+        } else if (/Realme/i.test(ua)) {
+          brand = "Realme";
+        }
+
+        // Map common Samsung, OnePlus and Pixel codes to friendly names
+        const samsungModels = {
+          'SM-S928B': 'Galaxy S24 Ultra',
+          'SM-S928U': 'Galaxy S24 Ultra',
+          'SM-S921B': 'Galaxy S24',
+          'SM-S926B': 'Galaxy S24+',
+          'SM-S918B': 'Galaxy S23 Ultra',
+          'SM-S918U': 'Galaxy S23 Ultra',
+          'SM-S911B': 'Galaxy S23',
+          'SM-S916B': 'Galaxy S23+',
+          'SM-S908B': 'Galaxy S22 Ultra',
+          'SM-S901B': 'Galaxy S22',
+          'SM-S906B': 'Galaxy S22+',
+          'SM-G998B': 'Galaxy S21 Ultra',
+          'SM-G991B': 'Galaxy S21',
+          'SM-A546B': 'Galaxy A54 5G',
+          'SM-A346B': 'Galaxy A34 5G',
+          'SM-M536B': 'Galaxy M53 5G',
+          'SM-G781B': 'Galaxy S20 FE',
+        };
+
+        const oneplusModels = {
+          'CPH2581': 'OnePlus 12',
+          'CPH2449': 'OnePlus 11',
+          'NE2213': 'OnePlus 10 Pro',
+          'DN2103': 'OnePlus Nord 2',
+        };
+
+        const pixelModels = {
+          'Pixel 8 Pro': 'Pixel 8 Pro',
+          'Pixel 8': 'Pixel 8',
+          'Pixel 7 Pro': 'Pixel 7 Pro',
+          'Pixel 7': 'Pixel 7',
+          'Pixel 6a': 'Pixel 6a',
+        };
+
+        let checkModel = model;
+        if (samsungModels[checkModel]) {
+          friendlyName = samsungModels[checkModel];
+        } else if (oneplusModels[checkModel]) {
+          friendlyName = oneplusModels[checkModel];
+        } else if (pixelModels[checkModel]) {
+          friendlyName = pixelModels[checkModel];
+        } else {
+          // General cleanup (if model starts with brand, don't repeat it)
+          if (brand && model.toLowerCase().startsWith(brand.toLowerCase())) {
+            friendlyName = model;
+          } else {
+            friendlyName = brand ? `${brand} ${model}` : model;
+          }
+        }
+      } else {
+        // Fallback Android device name
+        friendlyName = "Android Device";
+      }
+    }
+
+    if (!friendlyName) {
+      friendlyName = "Mobile Device";
+    }
+
+    // C. Create Popup Element
+    const toast = document.createElement('div');
+    toast.className = 'device-detector-toast';
+    toast.id = 'device-detector-toast';
+    toast.innerHTML = `
+      <div class="device-detector-header">
+        <div class="device-detector-title-group">
+          <div class="device-detector-icon">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </div>
+          <div class="device-detector-title">Shopping for <strong>${friendlyName}</strong>?</div>
+        </div>
+        <button class="device-detector-close" id="device-detector-close" aria-label="Dismiss">&times;</button>
+      </div>
+      <div class="device-detector-body">
+        Get the perfect cases, screen protectors, and accessories compatible with your <strong>${friendlyName}</strong>.
+      </div>
+      <div class="device-detector-actions">
+        <button class="device-detector-btn-primary" id="device-detector-btn-yes">View Compatible Cases</button>
+        <button class="device-detector-btn-secondary" id="device-detector-btn-no">No, Thanks</button>
+      </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    // D. Function to close the toast & set cooldown
+    const dismissToast = () => {
+      toast.classList.remove('show');
+      localStorage.setItem(DISMISS_KEY, Date.now().toString());
+      setTimeout(() => toast.remove(), 500);
+    };
+
+    // E. Bind button events
+    const closeBtn = toast.querySelector('#device-detector-close');
+    const noBtn = toast.querySelector('#device-detector-btn-no');
+    const yesBtn = toast.querySelector('#device-detector-btn-yes');
+
+    closeBtn.addEventListener('click', dismissToast);
+    noBtn.addEventListener('click', dismissToast);
+    yesBtn.addEventListener('click', () => {
+      // Redirect to shop page with search query
+      let searchQuery = friendlyName;
+      // Optimize search query slightly: remove brand prefix for more general search matches
+      if (brand && searchQuery.startsWith(brand + " ")) {
+        searchQuery = searchQuery.replace(brand + " ", "");
+      }
+      
+      window.location.href = `shop.html?search=${encodeURIComponent(searchQuery)}`;
+    });
+
+    // F. Show toast with a 2 second delay for premium entry animation
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 2000);
+  };
+
   // Run immediately if DOM is loaded, otherwise register listener
   if (document.body) {
     injectLoader();
     injectBackToTop();
+    injectDeviceDetector();
   } else {
     document.addEventListener('DOMContentLoaded', () => {
       injectLoader();
       injectBackToTop();
+      injectDeviceDetector();
     });
   }
 })();

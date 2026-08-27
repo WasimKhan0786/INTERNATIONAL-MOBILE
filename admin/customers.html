@@ -32,6 +32,9 @@
           <input type="text" id="admin-customer-search" placeholder="Search customers by name, phone..." style="padding: 10px 14px 10px 36px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); width: 100%;">
           <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
         </div>
+        <div>
+          <button id="btn-export-customers" class="btn btn-primary btn-sm" style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-file-arrow-down"></i> Export Customers (CSV)</button>
+        </div>
       </section>
 
       <!-- Customer table -->
@@ -66,6 +69,8 @@
   <script src="js/admin-common.js"></script>
   
   <script>
+    let currentCustomersList = [];
+
     document.addEventListener('DOMContentLoaded', async () => {
       // Guard page load
       const checkSession = setInterval(async () => {
@@ -80,6 +85,12 @@
       const searchIn = document.getElementById('admin-customer-search');
       if (searchIn) {
         searchIn.addEventListener('input', loadCustomersList);
+      }
+
+      // Bind export button
+      const exportBtn = document.getElementById('btn-export-customers');
+      if (exportBtn) {
+        exportBtn.addEventListener('click', exportCustomersToCSV);
       }
     });
 
@@ -99,8 +110,8 @@
             customersMap[key] = {
               name: order.customerName,
               mobile: order.mobile,
-              email: order.email,
-              location: `${order.city}, ${order.state}`,
+              email: order.email || 'N/A',
+              location: `${order.city || 'N/A'}, ${order.state || 'N/A'}`,
               orderCount: 0,
               totalSpent: 0
             };
@@ -122,6 +133,8 @@
             c.email.toLowerCase().includes(searchVal)
           );
         }
+
+        currentCustomersList = customers; // Save to global variable
 
         tbody.innerHTML = '';
 
@@ -147,6 +160,42 @@
         console.error(err);
         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--danger);">Failed to load customers profiles.</td></tr>`;
       }
+    }
+
+    function exportCustomersToCSV() {
+      if (currentCustomersList.length === 0) {
+        window.showToast("No customer data available to export.", "warning");
+        return;
+      }
+
+      const headers = ['Customer Name', 'Contact Number', 'Email Address', 'Location', 'Orders Placed', 'Total Spent'];
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += headers.join(",") + "\n";
+
+      currentCustomersList.forEach(c => {
+        const row = [
+          c.name,
+          c.mobile,
+          c.email,
+          c.location,
+          c.orderCount.toString(),
+          `₹${c.totalSpent}`
+        ];
+        const escapedRow = row.map(val => {
+          const clean = val.replace(/"/g, '""');
+          return clean.includes(',') || clean.includes('\n') ? `"${clean}"` : clean;
+        });
+        csvContent += escapedRow.join(",") + "\n";
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `customers_database_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.showToast("Customers database exported successfully!", "success");
     }
   </script>
 </body>

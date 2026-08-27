@@ -27,7 +27,7 @@
     <main class="admin-content">
       
       <!-- Actions Bar -->
-      <section class="admin-actions-bar">
+      <section class="admin-actions-bar" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
         <div style="display: flex; gap: 15px; align-items: center;">
           <label for="admin-orders-filter-status" style="font-weight:600; font-size:0.95rem;">Filter by Status:</label>
           <select id="admin-orders-filter-status" style="padding: 10px 14px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); background-color: white;">
@@ -39,6 +39,9 @@
             <option value="Delivered">Delivered</option>
             <option value="Cancelled">Cancelled</option>
           </select>
+        </div>
+        <div>
+          <button id="btn-export-orders" class="btn btn-primary btn-sm" style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-file-arrow-down"></i> Export Orders (CSV)</button>
         </div>
       </section>
 

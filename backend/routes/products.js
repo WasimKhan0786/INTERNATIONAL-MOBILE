@@ -12,6 +12,7 @@ const upload = multer({
 });
 
 router.get('/', productController.getAllProducts);
+router.post('/bulk', protect, productController.bulkUploadProducts);
 router.get('/:id', productController.getProductById);
 
 // Guarded Admin CRUD routes supporting multiple file uploads

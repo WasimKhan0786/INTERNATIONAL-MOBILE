@@ -239,7 +239,107 @@ I would like to order this item:
 
 Please confirm availability and share details for Cash on Delivery.`;
 
-  btn.href = `https://wa.me/${cleanNum}?text=${encodeURIComponent(textMsg)}`;
+  const whatsappUrl = `https://wa.me/${cleanNum}?text=${encodeURIComponent(textMsg)}`;
+  btn.href = whatsappUrl;
+
+  // Intercept click to capture customer name/mobile
+  if (!btn.dataset.bound) {
+    btn.dataset.bound = "true";
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      showWhatsAppDetailsModal(whatsappUrl, itemPrice, totalCost, settings);
+    });
+  }
+}
+
+// Show WhatsApp Details Modal and Log to DB
+function showWhatsAppDetailsModal(whatsappUrl, itemPrice, totalCost, settings) {
+  const modal = document.getElementById('whatsapp-order-modal');
+  if (!modal) return;
+
+  modal.classList.add('show');
+
+  const closeBtn = document.getElementById('whatsapp-order-modal-close');
+  const form = document.getElementById('whatsapp-order-details-form');
+
+  const closeModal = () => {
+    modal.classList.remove('show');
+    form.reset();
+  };
+
+  // Rebind close button to avoid multiple listeners
+  const newClose = closeBtn.cloneNode(true);
+  closeBtn.parentNode.replaceChild(newClose, closeBtn);
+  newClose.addEventListener('click', closeModal);
+
+  // Rebind form to prevent multiple submissions
+  const newForm = form.cloneNode(true);
+  form.parentNode.replaceChild(newForm, form);
+
+  newForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const custName = newForm.querySelector('#wa-cust-name').value.trim();
+    const custPhone = newForm.querySelector('#wa-cust-phone').value.trim();
+    const submitBtn = newForm.querySelector('#btn-wa-modal-submit');
+
+    if (!custName || !custPhone) {
+      window.showToast("Please enter your name and phone number.", "error");
+      return;
+    }
+
+    if (custPhone.length !== 10 || isNaN(custPhone)) {
+      window.showToast("Please enter a valid 10-digit phone number.", "error");
+      return;
+    }
+
+    // Build pending order data structure
+    const orderData = {
+      customerName: custName,
+      shopName: settings.shopName || "INTERNATIONAL MOBILE",
+      mobile: custPhone,
+      email: '',
+      products: [{
+        id: currentProduct.id,
+        name: currentProduct.name,
+        brand: currentProduct.brand || '',
+        price: itemPrice,
+        image: currentProduct.images[0] ? (currentProduct.images[0].url || currentProduct.images[0]) : '',
+        quantity: currentQuantity,
+        sku: currentProduct.sku || ''
+      }],
+      subtotal: totalCost,
+      deliveryCharge: 0,
+      discount: 0,
+      total: totalCost,
+      paymentMethod: 'WhatsApp Order',
+      address: 'WhatsApp Order',
+      city: 'WhatsApp Order',
+      state: 'WhatsApp Order',
+      pincode: '000000',
+      orderNotes: 'WhatsApp Order Initiated'
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+    try {
+      // 1. Log order to database (creates a Customer profile dynamically in admin)
+      await window.api.orders.create(orderData);
+      
+      // 2. Open WhatsApp in new tab
+      window.open(whatsappUrl, '_blank');
+      
+      // 3. Close modal & show toast
+      window.showToast("Redirecting to WhatsApp...", "success");
+      closeModal();
+    } catch (err) {
+      console.error(err);
+      window.showToast(err.message || "Failed to log order.", "error");
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Confirm & Order on WhatsApp';
+    }
+  });
 }
 
 // Stars Input highlights
