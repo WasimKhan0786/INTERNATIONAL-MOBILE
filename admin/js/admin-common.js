@@ -32,16 +32,19 @@ function injectAdminLayout(session, settings) {
   let sidebarEl = document.querySelector('.admin-sidebar');
   if (sidebarEl) {
     const path = window.location.pathname;
-    const isActive = (file) => path.endsWith(file) ? 'active' : '';
+    const isFile = (file) => path.endsWith(file);
+    const isActive = (file) => isFile(file) ? 'active' : '';
+
+    const isProductsActive = isFile('products.html') || isFile('add-product.html') || isFile('edit-product.html') ? 'active' : '';
 
     sidebarEl.innerHTML = `
       <div class="admin-sidebar-header">
-        ${settings.shopName.split(' ')[0]} <span>Admin</span>
-        <button class="admin-menu-trigger" id="sidebar-close-btn" style="color: white; border: none; background: none; font-size: 1.5rem;"><i class="fa-solid fa-xmark"></i></button>
+        ${(settings.shopName || 'Admin').split(' ')[0]} <span>Admin</span>
+        <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close navigation drawer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <ul class="admin-sidebar-menu">
         <li><a href="dashboard.html" class="admin-menu-link ${isActive('dashboard.html')}"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
-        <li><a href="products.html" class="admin-menu-link ${isActive('products.html')} || ${isActive('add-product.html')} || ${isActive('edit-product.html')}"><i class="fa-solid fa-boxes-stacked"></i> Products</a></li>
+        <li><a href="products.html" class="admin-menu-link ${isProductsActive}"><i class="fa-solid fa-boxes-stacked"></i> Products</a></li>
         <li><a href="categories.html" class="admin-menu-link ${isActive('categories.html')}"><i class="fa-solid fa-tags"></i> Categories</a></li>
         <li><a href="orders.html" class="admin-menu-link ${isActive('orders.html')}"><i class="fa-solid fa-receipt"></i> Orders</a></li>
         <li><a href="banners.html" class="admin-menu-link ${isActive('banners.html')}"><i class="fa-solid fa-images"></i> Home Banners</a></li>
@@ -70,14 +73,14 @@ function injectAdminLayout(session, settings) {
   if (headerEl) {
     const pageTitle = document.title.split('|')[0].trim() || 'Admin Panel';
     headerEl.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 15px;">
-        <button class="admin-menu-trigger" id="admin-drawer-open"><i class="fa-solid fa-bars"></i></button>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="admin-menu-trigger" id="admin-drawer-open" aria-label="Open navigation menu"><i class="fa-solid fa-bars"></i></button>
         <h1 class="admin-header-title">${pageTitle}</h1>
       </div>
       <div class="admin-header-actions">
-        <a href="../frontend/index.html" class="btn btn-outline btn-sm" target="_blank" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-globe"></i> <span>View Site</span></a>
+        <a href="../frontend/index.html" class="btn btn-outline btn-sm admin-view-site-btn" target="_blank" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-globe"></i> <span>View Site</span></a>
         <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+          <div style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
             A
           </div>
           <span class="admin-profile-name">Admin</span>
@@ -103,14 +106,25 @@ function setupAdminDrawer() {
   const openDrawer = () => {
     if (sidebar) sidebar.classList.add('open-drawer');
     backdrop.classList.add('show');
+    document.body.style.overflow = 'hidden';
   };
 
   const closeDrawer = () => {
     if (sidebar) sidebar.classList.remove('open-drawer');
     backdrop.classList.remove('show');
+    document.body.style.overflow = '';
   };
 
   if (openBtn) openBtn.addEventListener('click', openDrawer);
   if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
   backdrop.addEventListener('click', closeDrawer);
+
+  if (sidebar) {
+    sidebar.querySelectorAll('.admin-menu-link').forEach(link => {
+      if (!link.id || link.id !== 'admin-logout-trigger') {
+        link.addEventListener('click', closeDrawer);
+      }
+    });
+  }
 }
+
