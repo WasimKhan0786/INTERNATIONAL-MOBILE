@@ -50,10 +50,11 @@ async function initBanners() {
     banners.forEach((banner, idx) => {
       const activeClass = idx === 0 ? 'active' : '';
       const badgeHtml = banner.discountBadge ? `<span class="hero-discount-badge">${banner.discountBadge}</span>` : '';
+      const loadingAttr = idx === 0 ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
       
       slidesHtml += `
         <div class="hero-slide ${activeClass}" data-slide-index="${idx}">
-          <img src="${banner.image}" alt="${banner.title}" class="hero-slide-bg" onerror="this.src='https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=1600&auto=format&fit=crop&q=80'">
+          <img src="${banner.image}" alt="${banner.title}" class="hero-slide-bg" ${loadingAttr} onerror="this.src='https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=1600&auto=format&fit=crop&q=80'">
           <div class="container" style="position: relative; height: 100%; display: flex; align-items: center; justify-content: flex-start;">
             <div class="hero-slide-content">
               ${badgeHtml}
@@ -65,15 +66,15 @@ async function initBanners() {
         </div>
       `;
 
-      dotsHtml += `<button class="carousel-indicator-dot ${activeClass}" data-slide-to="${idx}"></button>`;
+      dotsHtml += `<button class="carousel-indicator-dot ${activeClass}" data-slide-to="${idx}" aria-label="Go to slide ${idx + 1}"></button>`;
     });
 
     container.innerHTML = `
       ${slidesHtml}
       
       <!-- Controls -->
-      <button class="carousel-control-btn prev" id="hero-prev-btn"><i class="fa-solid fa-chevron-left"></i></button>
-      <button class="carousel-control-btn next" id="hero-next-btn"><i class="fa-solid fa-chevron-right"></i></button>
+      <button class="carousel-control-btn prev" id="hero-prev-btn" aria-label="Previous Slide"><i class="fa-solid fa-chevron-left"></i></button>
+      <button class="carousel-control-btn next" id="hero-next-btn" aria-label="Next Slide"><i class="fa-solid fa-chevron-right"></i></button>
       
       <!-- Indicators -->
       <div class="carousel-indicators">
@@ -309,8 +310,8 @@ function renderProductGrid(element, productsList) {
         </a>
         <div class="product-badges">${badgeHtml}</div>
         ${window.getBrandLogoHtml ? window.getBrandLogoHtml(prod.brand) : ''}
-        <button class="product-quickview-btn btn-quick-view" data-id="${prod.id}" title="Quick View"><i class="fa-regular fa-eye"></i></button>
-        <button class="product-wishlist-btn" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
+        <button class="product-quickview-btn btn-quick-view" data-id="${prod.id}" title="Quick View" aria-label="Quick View ${prod.name}"><i class="fa-regular fa-eye"></i></button>
+        <button class="product-wishlist-btn" title="Add to Wishlist" aria-label="Add ${prod.name} to Wishlist"><i class="fa-regular fa-heart"></i></button>
       </div>
       <div class="product-info">
         <div class="product-brand">${prod.brand}</div>

@@ -383,8 +383,8 @@ function renderNextBatch() {
         </a>
         <div class="product-badges">${badgeHtml}</div>
         ${window.getBrandLogoHtml ? window.getBrandLogoHtml(prod.brand) : ''}
-        <button class="product-quickview-btn btn-quick-view" data-id="${prod.id}" title="Quick View"><i class="fa-regular fa-eye"></i></button>
-        <button class="product-wishlist-btn" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
+        <button class="product-quickview-btn btn-quick-view" data-id="${prod.id}" title="Quick View" aria-label="Quick View ${prod.name}"><i class="fa-regular fa-eye"></i></button>
+        <button class="product-wishlist-btn" title="Add to Wishlist" aria-label="Add ${prod.name} to Wishlist"><i class="fa-regular fa-heart"></i></button>
       </div>
       <div class="product-info">
         <div class="product-brand">${prod.brand}</div>

@@ -266,19 +266,19 @@ async function renderHeader(settings) {
       <div class="header-actions">
         <!-- Search bar desktop -->
         <div class="search-bar-container">
-          <button class="search-icon-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
-          <input type="text" placeholder="Search accessories..." class="search-input" id="desktop-search-input">
+          <button class="search-icon-btn" aria-label="Submit search"><i class="fa-solid fa-magnifying-glass"></i></button>
+          <input type="text" placeholder="Search accessories..." class="search-input" id="desktop-search-input" aria-label="Search accessories">
           <div class="search-suggestions" id="desktop-suggestions"></div>
         </div>
 
         <!-- Cart Button -->
-        <a href="cart.html" class="cart-icon-btn">
+        <a href="cart.html" class="cart-icon-btn" aria-label="Shopping Cart">
           <i class="fa-solid fa-cart-shopping"></i>
           <span class="cart-badge" style="display: none;">0</span>
         </a>
 
         <!-- Hamburger Icon Mobile -->
-        <button class="hamburger-btn" id="mobile-hamburger-trigger">
+        <button class="hamburger-btn" id="mobile-hamburger-trigger" aria-label="Open Navigation Menu">
           <i class="fa-solid fa-bars"></i>
         </button>
       </div>
@@ -303,13 +303,13 @@ async function renderHeader(settings) {
   mobileDrawer.innerHTML = `
     <div class="mobile-drawer-header">
       <span class="logo-text">${settings.shopName.split(' ')[0]} <span>${settings.shopName.split(' ').slice(1).join(' ') || ''}</span></span>
-      <button class="mobile-drawer-close" id="mobile-drawer-close-btn"><i class="fa-solid fa-xmark"></i></button>
+      <button class="mobile-drawer-close" id="mobile-drawer-close-btn" aria-label="Close Navigation Menu"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <!-- Mobile Search -->
     <div class="mobile-search-box" style="margin: 15px 0;">
       <div class="search-bar-container mobile-visible">
-        <button class="search-icon-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
-        <input type="text" placeholder="Search accessories..." class="search-input" id="mobile-search-input">
+        <button class="search-icon-btn" aria-label="Submit mobile search"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <input type="text" placeholder="Search accessories..." class="search-input" id="mobile-search-input" aria-label="Search accessories mobile">
         <div class="search-suggestions" id="mobile-suggestions"></div>
       </div>
     </div>

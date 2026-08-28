@@ -14,11 +14,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initializeProductsPage() {
-  // 1. Load category list and products grid in parallel
-  await Promise.all([
-    loadCategoryDropdown(),
-    renderProductsTable()
-  ]);
+  // 1. Load category list and products grid sequentially
+  await loadCategoryDropdown();
+  await renderProductsTable();
 
   // 3. Bind search & filter inputs
   const searchInput = document.getElementById('admin-product-search');
@@ -123,14 +121,14 @@ async function renderProductsTable() {
         <td data-label="Highlights">${highlightsHtml}</td>
         <td data-label="Status">
           <label class="admin-switch">
-            <input type="checkbox" class="status-toggle-checkbox" data-id="${prod.id}" ${isChecked}>
+            <input type="checkbox" class="status-toggle-checkbox" data-id="${prod.id || prod._id}" ${isChecked}>
             <span class="admin-slider"></span>
           </label>
         </td>
         <td data-label="Actions">
           <div style="display: flex; gap: 8px;">
-            <a href="edit-product.html?id=${prod.id}" class="btn btn-outline btn-sm" style="padding:6px 10px; font-size:0.75rem;" title="Edit Product"><i class="fa-solid fa-pen"></i></a>
-            <button class="btn btn-outline btn-sm btn-delete-product" data-id="${prod.id}" style="padding:6px 10px; font-size:0.75rem;" title="Delete Product"><i class="fa-solid fa-trash-can" style="color:var(--danger);"></i></button>
+            <a href="edit-product.html?id=${prod.id || prod._id}" class="btn btn-outline btn-sm" style="padding:6px 10px; font-size:0.75rem;" title="Edit Product"><i class="fa-solid fa-pen"></i></a>
+            <button class="btn btn-outline btn-sm btn-delete-product" data-id="${prod.id || prod._id}" style="padding:6px 10px; font-size:0.75rem;" title="Delete Product"><i class="fa-solid fa-trash-can" style="color:var(--danger);"></i></button>
           </div>
         </td>
       `;

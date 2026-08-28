@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-  <title>Product Details</title>
+  <meta name="description" content="View mobile accessory specifications, pricing, offers, and place instant orders with COD or WhatsApp at INTERNATIONAL MOBILE.">
+  <title>Product Details | INTERNATIONAL MOBILE</title>
   
+  <!-- Preconnect to Font & CDN Domains -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
   <!-- FontAwesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -90,9 +96,9 @@
         <div class="detail-qty-selector">
           <span style="font-weight: 600;">Quantity:</span>
           <div class="qty-control">
-            <button class="qty-btn" id="qty-minus"><i class="fa-solid fa-minus"></i></button>
-            <input type="number" class="qty-input" id="qty-val" value="1" min="1" readonly>
-            <button class="qty-btn" id="qty-plus"><i class="fa-solid fa-plus"></i></button>
+            <button class="qty-btn" id="qty-minus" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+            <input type="number" class="qty-input" id="qty-val" value="1" min="1" readonly aria-label="Quantity">
+            <button class="qty-btn" id="qty-plus" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
           </div>
         </div>
 
@@ -212,8 +218,8 @@
   </div>
 
   <!-- Scripts -->
-  <script src="js/api.js?v=1.0.1"></script>
-  <script src="js/common.js?v=1.0.1"></script>
-  <script src="js/product.js?v=1.0.1"></script>
+  <script src="js/api.js?v=1.0.1" defer></script>
+  <script src="js/common.js?v=1.0.1" defer></script>
+  <script src="js/product.js?v=1.0.1" defer></script>
 </body>
 </html>

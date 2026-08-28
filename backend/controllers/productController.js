@@ -20,7 +20,7 @@ exports.getAllProducts = async (req, res) => {
     const andConditions = [];
 
     // 1. Status Filter (Only active on customer side unless explicitly filtered)
-    if (!all) {
+    if (!all || all === 'false') {
       andConditions.push({ status: 'active' });
     } else if (status) {
       andConditions.push({ status: status });
@@ -108,7 +108,8 @@ exports.getAllProducts = async (req, res) => {
 
     const mappedProducts = products.map(prod => {
       const productObj = prod.toObject();
-      const salesCount = salesMap[productObj._id.toString()] || salesMap[productObj.id] || 0;
+      productObj.id = productObj._id ? productObj._id.toString() : (productObj.id ? productObj.id.toString() : '');
+      const salesCount = salesMap[productObj.id] || 0;
       if (salesCount > 0) {
         productObj.bestseller = true;
       }

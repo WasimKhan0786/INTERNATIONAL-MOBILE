@@ -16,7 +16,7 @@ async function loadDashboardData() {
   try {
     // 1. Fetch products & orders in parallel
     const [products, orders] = await Promise.all([
-      window.api.products.getAll(),
+      window.api.products.getAll({ all: true }),
       window.api.orders.getAll()
     ]);
 
