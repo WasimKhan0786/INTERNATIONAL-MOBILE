@@ -76,7 +76,12 @@ const api = {
       if (filters.minPrice) params.append('minPrice', filters.minPrice);
       if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
       if (filters.inStock) params.append('inStock', filters.inStock);
-      if (filters.sortBy) params.append('sortBy', filters.sortBy);
+      const sortByVal = filters.sortBy || filters.sort;
+      if (sortByVal) params.append('sortBy', sortByVal);
+      if (filters.featured) params.append('featured', filters.featured);
+      if (filters.newArrival) params.append('newArrival', filters.newArrival);
+      if (filters.bestseller) params.append('bestseller', filters.bestseller);
+      if (filters.status) params.append('status', filters.status);
       if (filters.all) params.append('all', filters.all);
 
       const res = await fetch(`${BASE_URL}/products?${params.toString()}`);

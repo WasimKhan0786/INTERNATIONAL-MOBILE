@@ -237,7 +237,9 @@ async function initProducts() {
     
     // Sort / Filter sections
     const featured = products.filter(p => p.featured).slice(0, 4);
-    const newArrivals = products.filter(p => p.newArrival).slice(0, 4);
+    const newArrivals = [...products]
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 4);
     const bestsellers = products.filter(p => p.bestseller).slice(0, 4);
 
     renderProductGrid(featuredGrid, featured);
@@ -274,7 +276,7 @@ function renderProductGrid(element, productsList) {
       if (hasDiscount) {
         badgeHtml += `<span class="badge badge-offer">${discountPct}% OFF</span>`;
       }
-      if (prod.newArrival) {
+      if (prod.newArrival || window.isRecentAddition(prod.createdAt)) {
         badgeHtml += `<span class="badge badge-new">New</span>`;
       }
       if (prod.bestseller) {
@@ -306,6 +308,8 @@ function renderProductGrid(element, productsList) {
             <img src="${prod.images[0] ? (prod.images[0].url || prod.images[0]) : ''}" alt="${prod.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'">
         </a>
         <div class="product-badges">${badgeHtml}</div>
+        ${window.getBrandLogoHtml ? window.getBrandLogoHtml(prod.brand) : ''}
+        <button class="product-quickview-btn btn-quick-view" data-id="${prod.id}" title="Quick View"><i class="fa-regular fa-eye"></i></button>
         <button class="product-wishlist-btn" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
       </div>
       <div class="product-info">
@@ -343,6 +347,12 @@ function renderProductGrid(element, productsList) {
       if (success) {
         window.location.href = 'cart.html';
       }
+    });
+
+    // Bind Quick View
+    card.querySelector('.btn-quick-view').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      window.openQuickViewModal(prod.id);
     });
 
     element.appendChild(card);

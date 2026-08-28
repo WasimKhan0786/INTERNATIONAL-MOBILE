@@ -60,6 +60,11 @@ const ProductSchema = new mongoose.Schema({
     default: null,
     min: 0
   },
+  pricePerPiece: {
+    type: Number,
+    default: null,
+    min: 0
+  },
   stock: {
     type: Number,
     required: true,

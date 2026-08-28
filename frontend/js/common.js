@@ -189,10 +189,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Render Layout Components
-  renderHeader(settings);
+  await renderHeader(settings);
   renderFooter(settings);
   renderWhatsAppFloat(settings);
-  
   // Setup sticky header effect
   const header = document.querySelector('header');
   if (header) {
@@ -213,12 +212,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Render Header HTML
-function renderHeader(settings) {
+async function renderHeader(settings) {
   const headerEl = document.querySelector('header');
   if (!headerEl) return;
 
   const currentPath = window.location.pathname;
   const isPageActive = (path) => currentPath.endsWith(path) ? 'active' : '';
+
+  let categories = [];
+  try {
+    categories = await window.api.categories.getAll();
+  } catch (err) {
+    console.error("Failed to load categories for header dropdown", err);
+  }
 
   headerEl.className = ''; // reset just in case
   headerEl.innerHTML = `
@@ -245,9 +251,14 @@ function renderHeader(settings) {
       <!-- Desktop Nav -->
       <ul class="nav-menu">
         <li><a href="index.html" class="nav-link ${isPageActive('index.html') || isPageActive('/') ? 'active' : ''}">Home</a></li>
-        <li><a href="about.html" class="nav-link ${isPageActive('about.html') ? 'active' : ''}">About Us</a></li>
+        <li class="dropdown">
+          <a href="#" class="nav-link">Shop by Category <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 4px;"></i></a>
+          <ul class="dropdown-menu">
+            ${categories.map(cat => `<li><a href="category.html?slug=${cat.slug}">${cat.name}</a></li>`).join('')}
+          </ul>
+        </li>
         <li><a href="shop.html" class="nav-link ${isPageActive('shop.html') && !window.location.search.includes('category=accessories') ? 'active' : ''}">Products</a></li>
-        <li><a href="shop.html?category=accessories" class="nav-link ${window.location.search.includes('category=accessories') ? 'active' : ''}">Accessories</a></li>
+        <li><a href="about.html" class="nav-link ${isPageActive('about.html') ? 'active' : ''}">About Us</a></li>
         <li><a href="contact.html" class="nav-link ${isPageActive('contact.html') ? 'active' : ''}">Contact Us</a></li>
       </ul>
 
@@ -304,9 +315,14 @@ function renderHeader(settings) {
     </div>
     <ul class="mobile-nav-menu">
       <li><a href="index.html" class="mobile-nav-link ${isPageActive('index.html') || isPageActive('/') ? 'active' : ''}">Home</a></li>
-      <li><a href="about.html" class="mobile-nav-link ${isPageActive('about.html') ? 'active' : ''}">About Us</a></li>
+      <li class="mobile-dropdown">
+        <a href="#" class="mobile-nav-link" id="mobile-categories-toggle" style="display: flex; justify-content: space-between; align-items: center;">Shop by Category <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i></a>
+        <ul class="mobile-submenu" id="mobile-categories-submenu" style="display: none; padding-left: 15px; margin-top: 5px; list-style: none;">
+          ${categories.map(cat => `<li><a href="category.html?slug=${cat.slug}">${cat.name}</a></li>`).join('')}
+        </ul>
+      </li>
       <li><a href="shop.html" class="mobile-nav-link ${isPageActive('shop.html') && !window.location.search.includes('category=accessories') ? 'active' : ''}">Products</a></li>
-      <li><a href="shop.html?category=accessories" class="mobile-nav-link ${window.location.search.includes('category=accessories') ? 'active' : ''}">Accessories</a></li>
+      <li><a href="about.html" class="mobile-nav-link ${isPageActive('about.html') ? 'active' : ''}">About Us</a></li>
       <li><a href="contact.html" class="mobile-nav-link ${isPageActive('contact.html') ? 'active' : ''}">Contact Us</a></li>
     </ul>
   `;
@@ -328,6 +344,21 @@ function renderHeader(settings) {
   if (hamBtn) hamBtn.addEventListener('click', openDrawer);
   if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
   backdrop.addEventListener('click', closeDrawer);
+
+  // Bind Mobile Categories dropdown toggle
+  const mobileToggle = document.getElementById('mobile-categories-toggle');
+  const mobileSubmenu = document.getElementById('mobile-categories-submenu');
+  if (mobileToggle && mobileSubmenu) {
+    mobileToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      const isHidden = mobileSubmenu.style.display === 'none';
+      mobileSubmenu.style.display = isHidden ? 'block' : 'none';
+      const icon = mobileToggle.querySelector('i');
+      if (icon) {
+        icon.className = isHidden ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+      }
+    });
+  }
 }
 
 // Render Footer HTML
@@ -779,3 +810,214 @@ window.cart = cart;
     });
   }
 })();
+
+// Helper to determine if a product was added recently (within the last 7 days)
+window.isRecentAddition = function(createdAt) {
+  if (!createdAt) return false;
+  const createdDate = new Date(createdAt);
+  const today = new Date();
+  const timeDiff = Math.abs(today.getTime() - createdDate.getTime());
+  const diffDays = timeDiff / (1000 * 3600 * 24);
+  return diffDays <= 7;
+};
+
+// Global helper to render premium brand logo badges
+window.getBrandLogoHtml = function(brandName) {
+  if (!brandName) return '';
+  const cleanBrand = brandName.trim().toLowerCase();
+  
+  const logoUrls = {
+    'boat': 'https://www.boat-lifestyle.com/cdn/shop/files/boAt_logo_small_3071_x_955_11ba71ed-a16f-47cf-898f-4ad14ccf25a7.png?v=1646738980',
+    'noise': 'https://www.gonoise.com/cdn/shop/files/noise_logo_white_300x.png',
+    'realme': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Realme-logo.svg/200px-Realme-logo.svg.png',
+    'samsung': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Samsung_Logo.svg/200px-Samsung_Logo.svg.png',
+    'apple': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Apple_logo_black.svg/200px-Apple_logo_black.svg.png',
+    'oneplus': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/OnePlus_logo.svg/200px-OnePlus_logo.svg.png',
+    'tessco': 'https://tessco.in/wp-content/uploads/2021/04/Tessco-Logo.png'
+  };
+
+  const url = logoUrls[cleanBrand];
+  if (url) {
+    return `<div class="brand-badge-logo" title="${brandName}"><img src="${url}" alt="${brandName}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><span class="brand-fallback-logo">${brandName}</span></div>`;
+  } else {
+    return `<div class="brand-badge-logo text-badge" title="${brandName}"><span class="brand-fallback-logo" style="display: flex;">${brandName}</span></div>`;
+  }
+};
+
+// Global helper to open interactive Quick View Modal
+window.openQuickViewModal = async function(productId) {
+  try {
+    const product = await window.api.products.getById(productId);
+    if (!product) return;
+
+    // Remove existing modal if present
+    const existing = document.getElementById('quickview-modal');
+    if (existing) existing.remove();
+
+    const hasDiscount = product.discountPrice && product.discountPrice < product.price;
+    const discountPct = hasDiscount ? Math.round(((product.price - product.discountPrice) / product.price) * 100) : 0;
+
+    const pricePerPieceHtml = (product.pricePerPiece && Number(product.pricePerPiece) > 0)
+      ? `<div style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-top: 6px; background: var(--bg-light); padding: 3px 8px; border-radius: 4px; display: inline-block;">Price Per Piece: <strong style="color: var(--primary-color);">₹${product.pricePerPiece}</strong> / pc</div>`
+      : '';
+
+    const priceHtml = (hasDiscount 
+      ? `<span class="quick-discount-price" style="font-size: 1.4rem; color: var(--primary-color); font-weight: 700;">₹${product.discountPrice}</span>
+         <span class="quick-original-price" style="font-size: 1.1rem; color: var(--text-muted); text-decoration: line-through; margin-left: 10px;">₹${product.price}</span>
+         <span style="background-color: var(--success); color: white; padding: 2px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; margin-left: 10px;">${discountPct}% OFF</span>`
+      : `<span class="quick-discount-price" style="font-size: 1.4rem; color: var(--primary-color); font-weight: 700;">₹${product.price}</span>`) + pricePerPieceHtml;
+
+    let variantsHtml = '';
+    const specifications = product.specifications || [];
+    const colorSpec = specifications.find(s => s.name.toLowerCase() === 'color');
+    if (colorSpec) {
+      const colors = colorSpec.value.split(',').map(c => c.trim());
+      variantsHtml += `
+        <div style="margin-bottom: 15px;">
+          <label style="font-weight: 600; font-size: 0.9rem; display: block; margin-bottom: 6px;">Available Colors:</label>
+          <div style="display: flex; gap: 8px;">
+            ${colors.map((c, idx) => `
+              <button class="quick-variant-btn ${idx === 0 ? 'active' : ''}" data-variant="${c}" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background: white; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;">
+                ${c}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'quickview-modal';
+    modal.className = 'modal-backdrop';
+    modal.style.display = 'flex';
+    modal.style.justifyContent = 'center';
+    modal.style.alignItems = 'center';
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+    modal.style.backgroundColor = 'rgba(0,0,0,0.6)';
+    modal.style.zIndex = '9999';
+    modal.style.padding = '20px';
+
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 800px; width: 100%; max-height: 90vh; overflow-y: auto; background: white; border-radius: var(--border-radius-md); position: relative; padding: 25px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 30px; box-shadow: var(--shadow-lg);">
+        <button id="quickview-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); z-index: 10;">&times;</button>
+        
+        <!-- Images Column -->
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          <div style="width: 100%; aspect-ratio: 1; background: var(--bg-light); border-radius: var(--border-radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
+            <img id="quickview-main-image" src="${product.images[0] ? (product.images[0].url || product.images[0]) : ''}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: contain;">
+          </div>
+          <!-- Thumbnail Row -->
+          <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
+            ${product.images.map((img, idx) => `
+              <div class="quick-thumb-wrapper ${idx === 0 ? 'active' : ''}" data-img-url="${img.url || img}" style="width: 60px; height: 60px; border-radius: var(--border-radius-sm); overflow: hidden; border: 2px solid ${idx === 0 ? 'var(--primary-color)' : 'var(--border-color)'}; cursor: pointer; flex-shrink: 0;">
+                <img src="${img.url || img}" alt="thumb" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Info Column -->
+        <div style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px;">${product.brand}</div>
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 12px; line-height: 1.3;">${product.name}</h2>
+            
+            <!-- Rating -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+              <span style="color: #ffb703; font-size: 0.9rem;">
+                ${Array(5).fill(0).map((_, i) => i + 1 <= Math.floor(product.rating || 4.5) ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>').join('')}
+              </span>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">(${product.reviewsCount || 10} Reviews)</span>
+            </div>
+
+            <!-- Price -->
+            <div style="margin-bottom: 15px; display: flex; align-items: center;">
+              ${priceHtml}
+            </div>
+
+            <!-- Description -->
+            <p style="font-size: 0.85rem; color: var(--text-dark); line-height: 1.6; margin-bottom: 20px;">
+              ${product.description || 'No description available for this product.'}
+            </p>
+
+            ${variantsHtml}
+          </div>
+
+          <!-- Actions -->
+          <div style="border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+              <button id="quickview-add-cart" class="btn btn-outline" style="width: 100%; ${product.stock <= 0 ? 'background-color: var(--text-muted); cursor: not-allowed; opacity: 0.6;' : ''}" ${product.stock <= 0 ? 'disabled' : ''}>
+                ${product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+              </button>
+              <button id="quickview-buy-now" class="btn btn-primary" style="width: 100%; ${product.stock <= 0 ? 'display:none;' : ''}" ${product.stock <= 0 ? 'disabled' : ''}>
+                Buy Now
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeModal = () => modal.remove();
+    modal.querySelector('#quickview-close').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    const variantBtns = modal.querySelectorAll('.quick-variant-btn');
+    let selectedColor = colorSpec ? colorSpec.value.split(',')[0].trim() : '';
+    variantBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        variantBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedColor = btn.dataset.variant;
+      });
+    });
+
+    const thumbs = modal.querySelectorAll('.quick-thumb-wrapper');
+    const mainImg = modal.querySelector('#quickview-main-image');
+    thumbs.forEach(t => {
+      t.addEventListener('click', () => {
+        thumbs.forEach(th => th.style.borderColor = 'var(--border-color)');
+        t.style.borderColor = 'var(--primary-color)';
+        mainImg.src = t.dataset.imgUrl;
+      });
+    });
+
+    modal.querySelector('#quickview-add-cart').addEventListener('click', () => {
+      if (product.stock <= 0) return;
+      const prodToCart = { ...product };
+      if (selectedColor) {
+        prodToCart.selectedVariant = selectedColor;
+      }
+      window.cart.add(prodToCart, 1);
+      closeModal();
+    });
+
+    const buyNowBtn = modal.querySelector('#quickview-buy-now');
+    if (buyNowBtn) {
+      buyNowBtn.addEventListener('click', () => {
+        if (product.stock <= 0) return;
+        const prodToCart = { ...product };
+        if (selectedColor) {
+          prodToCart.selectedVariant = selectedColor;
+        }
+        const success = window.cart.add(prodToCart, 1);
+        if (success) {
+          window.location.href = 'cart.html';
+        }
+      });
+    }
+
+  } catch (err) {
+    console.error(err);
+    window.showToast("Failed to load Quick View details.", "error");
+  }
+};

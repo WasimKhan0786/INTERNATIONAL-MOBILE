@@ -11,6 +11,12 @@ let activeFilters = {
   sort: 'newest'
 };
 
+// Infinite Scroll state variables
+let allProducts = [];
+let renderedCount = 0;
+const BATCH_SIZE = 8;
+let isFetching = false;
+
 document.addEventListener('DOMContentLoaded', async () => {
   // Parse query parameters from URL
   parseQueryParams();
@@ -68,12 +74,12 @@ async function loadFilterOptions() {
       }).join('');
     }
 
-    // 2. Unique Brands from all active products
+    // 2. Unique Brands from all active products (sanitize empty/whitespace brands to prevent unnamed checkbox)
     const products = await window.api.products.getAll();
-    const brands = [...new Set(products.map(p => p.brand))].sort();
+    const brands = [...new Set(products.map(p => p.brand ? p.brand.trim() : '').filter(b => b !== ''))].sort();
     if (brandList) {
       brandList.innerHTML = brands.map((brand, idx) => {
-        const isChecked = activeFilters.brand.toLowerCase() === brand.toLowerCase() ? 'checked' : '';
+        const isChecked = (activeFilters.brand && activeFilters.brand.toLowerCase() === brand.toLowerCase()) ? 'checked' : '';
         return `
           <li class="filter-item">
             <label for="brand-${idx}">
@@ -205,7 +211,10 @@ function setupFilterEvents() {
         minPrice: '',
         maxPrice: '',
         inStock: 'false',
-        sort: 'newest'
+        sort: 'newest',
+        featured: '',
+        newArrival: '',
+        bestseller: ''
       };
 
       // Reset controls
@@ -232,122 +241,223 @@ function setupFilterEvents() {
       fetchAndRenderProducts();
     });
   }
+
+  // Make sidebar widgets collapsible (accordion style)
+  const widgets = document.querySelectorAll('.shop-sidebar-widget');
+  widgets.forEach(widget => {
+    const header = widget.querySelector('h3');
+    const list = widget.querySelector('.filter-list') || widget.querySelector('.price-range-inputs') || widget.querySelector('#btn-clear-all-filters');
+    if (header && list) {
+      header.style.cursor = 'pointer';
+      header.style.display = 'flex';
+      header.style.justifyContent = 'space-between';
+      header.style.alignItems = 'center';
+      header.style.userSelect = 'none';
+
+      // Insert chevron arrow icon if not already present
+      if (!header.querySelector('i')) {
+        header.innerHTML += ' <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem; transition: transform 0.25s ease;"></i>';
+      }
+      
+      const icon = header.querySelector('i');
+
+      header.addEventListener('click', () => {
+        const isCollapsed = widget.classList.toggle('collapsed');
+        
+        // Toggle slide visual display
+        if (isCollapsed) {
+          list.style.display = 'none';
+          if (widget.querySelector('.btn-block')) {
+            const btn = widget.querySelector('.btn-block');
+            if (btn && btn.id === 'btn-apply-price-filter') btn.style.display = 'none';
+          }
+          if (icon) icon.style.transform = 'rotate(-90deg)';
+        } else {
+          list.style.display = 'block';
+          if (widget.querySelector('.btn-block')) {
+            const btn = widget.querySelector('.btn-block');
+            if (btn && btn.id === 'btn-apply-price-filter') btn.style.display = 'block';
+          }
+          if (icon) icon.style.transform = 'rotate(0deg)';
+        }
+      });
+    }
+  });
 }
 
 // Fetch and render filtered grid
 async function fetchAndRenderProducts() {
   const grid = document.getElementById('shop-products-grid');
   const countLabel = document.getElementById('shop-results-count-label');
+  const loader = document.getElementById('infinite-scroll-loader');
   if (!grid) return;
 
   grid.innerHTML = Array(6).fill(0).map(() => `<div class="skeleton-card"></div>`).join('');
+  if (loader) loader.style.display = 'none';
 
   try {
     const products = await window.api.products.getAll(activeFilters);
     grid.innerHTML = '';
     
-    // Render result count
-    if (countLabel) {
-      countLabel.textContent = `Showing ${products.length} product${products.length === 1 ? '' : 's'}`;
-    }
-
-    if (products.length === 0) {
-      grid.innerHTML = `
-        <div class="empty-state" style="grid-column: 1/-1;">
-          <div class="empty-state-icon"><i class="fa-solid fa-box-open"></i></div>
-          <h2>No Products Found</h2>
-          <p>We couldn't find any products matching your filters. Try clearing your filters or widening search terms.</p>
-        </div>
-      `;
-      return;
-    }
-
-    products.forEach(prod => {
-      const card = document.createElement('div');
-      card.className = 'product-card';
-      
-      const hasDiscount = prod.discountPrice && prod.discountPrice < prod.price;
-      const discountPct = hasDiscount ? Math.round(((prod.price - prod.discountPrice) / prod.price) * 100) : 0;
-      
-      let badgeHtml = '';
-      if (prod.stock <= 0) {
-        badgeHtml = `<span class="badge badge-outofstock">Out of Stock</span>`;
-      } else {
-        if (hasDiscount) {
-          badgeHtml += `<span class="badge badge-offer">${discountPct}% OFF</span>`;
-        }
-        if (prod.newArrival) {
-          badgeHtml += `<span class="badge badge-new">New</span>`;
-        }
-        if (prod.bestseller) {
-          badgeHtml += `<span class="badge badge-bestseller">Bestseller</span>`;
-        }
-      }
-
-      const ratingVal = prod.rating || 4.5;
-      let starsHtml = '';
-      for (let i = 1; i <= 5; i++) {
-        if (i <= Math.floor(ratingVal)) {
-          starsHtml += `<i class="fa-solid fa-star"></i>`;
-        } else if (i - 0.5 <= ratingVal) {
-          starsHtml += `<i class="fa-solid fa-star-half-stroke"></i>`;
-        } else {
-          starsHtml += `<i class="fa-regular fa-star"></i>`;
-        }
-      }
-
-      const priceHtml = hasDiscount 
-        ? `<span class="product-discount-price">₹${prod.discountPrice}</span>
-           <span class="product-original-price">₹${prod.price}</span>`
-        : `<span class="product-discount-price">₹${prod.price}</span>`;
-
-      card.innerHTML = `
-        <div class="product-image-container">
-          <a href="product.html?id=${prod.id}">
-            <img src="${prod.images[0] ? (prod.images[0].url || prod.images[0]) : ''}" alt="${prod.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'">
-          </a>
-          <div class="product-badges">${badgeHtml}</div>
-          <button class="product-wishlist-btn" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
-        </div>
-        <div class="product-info">
-          <div class="product-brand">${prod.brand}</div>
-          <a href="product.html?id=${prod.id}" class="product-title" title="${prod.name}">${prod.name}</a>
-          <div class="product-rating">
-            <span class="stars-rating">${starsHtml}</span>
-            <span class="rating-count">(${prod.reviewsCount || 10})</span>
-          </div>
-          <div class="product-price-wrapper">
-            ${priceHtml}
-          </div>
-          <div class="product-card-actions">
-            <button class="add-cart-btn btn-add-to-cart" data-id="${prod.id}" ${prod.stock <= 0 ? 'disabled style="background-color: var(--text-muted); cursor: not-allowed; width: 100%; flex: 1;"' : ''}>
-              ${prod.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
-            </button>
-            <button class="buy-now-btn btn-buy-now" data-id="${prod.id}" ${prod.stock <= 0 ? 'disabled style="display: none;"' : ''}>
-              Buy Now
-            </button>
-          </div>
-        </div>
-      `;
-
-      card.querySelector('.btn-add-to-cart').addEventListener('click', () => {
-        if (prod.stock <= 0) return;
-        window.cart.add(prod, 1);
-      });
-
-      card.querySelector('.btn-buy-now').addEventListener('click', () => {
-        if (prod.stock <= 0) return;
-        const success = window.cart.add(prod, 1);
-        if (success) {
-          window.location.href = 'cart.html';
-        }
-      });
-
-      grid.appendChild(card);
-    });
+    // Cache the loaded products list
+    allProducts = products;
+    renderedCount = 0;
+    
+    // Render first batch
+    renderNextBatch();
 
   } catch (err) {
     console.error("Error drawing products list", err);
     grid.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">Something went wrong while retrieving products.</div>`;
   }
 }
+
+// Render next batch of items in infinite scroll
+function renderNextBatch() {
+  const grid = document.getElementById('shop-products-grid');
+  const loader = document.getElementById('infinite-scroll-loader');
+  if (!grid) return;
+
+  const countLabel = document.getElementById('shop-results-count-label');
+  if (countLabel) {
+    countLabel.textContent = `Showing ${Math.min(renderedCount + BATCH_SIZE, allProducts.length)} of ${allProducts.length} product${allProducts.length === 1 ? '' : 's'}`;
+  }
+
+  const nextBatch = allProducts.slice(renderedCount, renderedCount + BATCH_SIZE);
+  
+  if (nextBatch.length === 0 && renderedCount === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column: 1/-1;">
+        <div class="empty-state-icon"><i class="fa-solid fa-box-open"></i></div>
+        <h2>No Products Found</h2>
+        <p>We couldn't find any products matching your filters. Try clearing your filters or widening search terms.</p>
+      </div>
+    `;
+    if (loader) loader.style.display = 'none';
+    return;
+  }
+
+  nextBatch.forEach(prod => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    
+    const hasDiscount = prod.discountPrice && prod.discountPrice < prod.price;
+    const discountPct = hasDiscount ? Math.round(((prod.price - prod.discountPrice) / prod.price) * 100) : 0;
+    
+    let badgeHtml = '';
+    if (prod.stock <= 0) {
+      badgeHtml = `<span class="badge badge-outofstock">Out of Stock</span>`;
+    } else {
+      if (hasDiscount) {
+        badgeHtml += `<span class="badge badge-offer">${discountPct}% OFF</span>`;
+      }
+      if (prod.newArrival || window.isRecentAddition(prod.createdAt)) {
+        badgeHtml += `<span class="badge badge-new">New</span>`;
+      }
+      if (prod.bestseller) {
+        badgeHtml += `<span class="badge badge-bestseller">Bestseller</span>`;
+      }
+    }
+
+    const ratingVal = prod.rating || 4.5;
+    let starsHtml = '';
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(ratingVal)) {
+        starsHtml += `<i class="fa-solid fa-star"></i>`;
+      } else if (i - 0.5 <= ratingVal) {
+        starsHtml += `<i class="fa-solid fa-star-half-stroke"></i>`;
+      } else {
+        starsHtml += `<i class="fa-regular fa-star"></i>`;
+      }
+    }
+
+    const priceHtml = hasDiscount 
+      ? `<span class="product-discount-price">₹${prod.discountPrice}</span>
+         <span class="product-original-price">₹${prod.price}</span>`
+      : `<span class="product-discount-price">₹${prod.price}</span>`;
+
+    card.innerHTML = `
+      <div class="product-image-container">
+        <a href="product.html?id=${prod.id}">
+          <img src="${prod.images[0] ? (prod.images[0].url || prod.images[0]) : ''}" alt="${prod.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'">
+        </a>
+        <div class="product-badges">${badgeHtml}</div>
+        ${window.getBrandLogoHtml ? window.getBrandLogoHtml(prod.brand) : ''}
+        <button class="product-quickview-btn btn-quick-view" data-id="${prod.id}" title="Quick View"><i class="fa-regular fa-eye"></i></button>
+        <button class="product-wishlist-btn" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
+      </div>
+      <div class="product-info">
+        <div class="product-brand">${prod.brand}</div>
+        <a href="product.html?id=${prod.id}" class="product-title" title="${prod.name}">${prod.name}</a>
+        <div class="product-rating">
+          <span class="stars-rating">${starsHtml}</span>
+          <span class="rating-count">(${prod.reviewsCount || 10})</span>
+        </div>
+        <div class="product-price-wrapper">
+          ${priceHtml}
+        </div>
+        <div class="product-card-actions">
+          <button class="add-cart-btn btn-add-to-cart" data-id="${prod.id}" ${prod.stock <= 0 ? 'disabled style="background-color: var(--text-muted); cursor: not-allowed; width: 100%; flex: 1;"' : ''}>
+            ${prod.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
+          </button>
+          <button class="buy-now-btn btn-buy-now" data-id="${prod.id}" ${prod.stock <= 0 ? 'disabled style="display: none;"' : ''}>
+            Buy Now
+          </button>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('.btn-add-to-cart').addEventListener('click', () => {
+      if (prod.stock <= 0) return;
+      window.cart.add(prod, 1);
+    });
+
+    card.querySelector('.btn-buy-now').addEventListener('click', () => {
+      if (prod.stock <= 0) return;
+      const success = window.cart.add(prod, 1);
+      if (success) {
+        window.location.href = 'cart.html';
+      }
+    });
+
+    // Bind Quick View
+    card.querySelector('.btn-quick-view').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      window.openQuickViewModal(prod.id);
+    });
+
+    grid.appendChild(card);
+  });
+
+  renderedCount += nextBatch.length;
+
+  // Show/hide loading indicator
+  if (loader) {
+    if (renderedCount < allProducts.length) {
+      loader.style.display = 'block';
+    } else {
+      loader.style.display = 'none';
+    }
+  }
+}
+
+// Scroll event listener for infinite scroll
+window.addEventListener('scroll', () => {
+  const loader = document.getElementById('infinite-scroll-loader');
+  if (!loader || loader.style.display === 'none' || isFetching) return;
+
+  // Check if we are near the bottom of the viewport
+  const threshold = 150; // pixels from the bottom
+  const position = window.innerHeight + window.scrollY;
+  const height = document.documentElement.offsetHeight;
+
+  if (position >= height - threshold) {
+    isFetching = true;
+    
+    // Simulate loading delay for smooth visual display of the loading progress arrow icon
+    setTimeout(() => {
+      renderNextBatch();
+      isFetching = false;
+    }, 800);
+  }
+});

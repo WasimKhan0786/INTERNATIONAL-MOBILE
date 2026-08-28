@@ -52,6 +52,7 @@
 
       <!-- Info Right -->
       <div>
+        <div id="detail-badges" style="margin-bottom: 12px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
         <div class="detail-brand" id="detail-brand">OnePlus</div>
         <h1 class="detail-title" id="detail-title">SuperVOOC 65W Fast Charger</h1>
         <div class="product-rating" style="font-size: 0.9rem; margin-bottom: 10px;">
@@ -68,6 +69,11 @@
             <span class="detail-price" id="detail-price">₹1,299</span>
             <span class="detail-original-price" id="detail-original-price">₹1,999</span>
             <span class="detail-saving" id="detail-saving-pct">35% OFF</span>
+          </div>
+          <div class="detail-price-per-piece-row" id="detail-price-per-piece-box" style="margin-top: 8px; display: none;">
+            <span style="font-size: 0.9rem; color: var(--text-dark); font-weight: 600; background-color: var(--bg-light); padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border-color); display: inline-block;">
+              Price Per Piece: <strong id="detail-price-per-piece-val" style="color: var(--primary-color);">₹0</strong> / piece
+            </span>
           </div>
           <div class="stock-status" id="detail-stock-status">
             <!-- Stock status -->
@@ -115,18 +121,10 @@
 
     <!-- Reviews Section -->
     <section class="section-padding" style="border-top: 1px solid var(--border-color);">
-      <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px;" class="reviews-wrapper-mobile">
+      <div style="max-width: 800px; margin: 0 auto;">
         
-        <!-- Review List -->
-        <div>
-          <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 20px;">Customer Feedback</h2>
-          <div class="reviews-grid" id="product-reviews-list" style="grid-template-columns: 1fr; gap: 15px;">
-            <!-- Review rows -->
-          </div>
-        </div>
-
         <!-- Add Review Form -->
-        <div class="review-form-box">
+        <div class="review-form-box" style="margin-bottom: 50px; background-color: var(--bg-white); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 25px;">
           <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Write a Review</h3>
           <form id="review-submit-form">
             <div class="form-group" style="margin-bottom: 15px;">
@@ -149,6 +147,23 @@
             </div>
             <button type="submit" class="btn btn-primary btn-sm btn-block">Post Review</button>
           </form>
+        </div>
+
+        <!-- Review List (Testimonial Slider) -->
+        <div>
+          <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 25px; text-align: center;">Customer Feedback</h2>
+          <div style="position: relative; overflow: hidden; padding: 10px 0;">
+            <div class="reviews-slider-container" id="product-reviews-list-container">
+              <div class="reviews-slider-track" id="product-reviews-list">
+                <!-- Review cards loaded dynamically -->
+              </div>
+            </div>
+            <!-- Slider Controls -->
+            <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
+              <button id="btn-review-prev" class="btn btn-outline btn-sm" style="padding: 6px 16px;"><i class="fa-solid fa-arrow-left"></i></button>
+              <button id="btn-review-next" class="btn btn-outline btn-sm" style="padding: 6px 16px;"><i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+          </div>
         </div>
 
       </div>

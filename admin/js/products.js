@@ -14,21 +14,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initializeProductsPage() {
-  // 1. Load Categories filter dropdown
-  await loadCategoryDropdown();
-
-  // 2. Fetch and render products
-  await renderProductsTable();
+  // 1. Load category list and products grid in parallel
+  await Promise.all([
+    loadCategoryDropdown(),
+    renderProductsTable()
+  ]);
 
   // 3. Bind search & filter inputs
   const searchInput = document.getElementById('admin-product-search');
   const catFilter = document.getElementById('admin-product-filter-category');
+  const statusFilter = document.getElementById('admin-product-filter-status');
+  const sortSelect = document.getElementById('admin-product-sort');
 
   if (searchInput) {
-    searchInput.addEventListener('input', renderProductsTable);
+    searchInput.addEventListener('input', debounce(renderProductsTable, 300));
   }
   if (catFilter) {
     catFilter.addEventListener('change', renderProductsTable);
+  }
+  if (statusFilter) {
+    statusFilter.addEventListener('change', renderProductsTable);
+  }
+  if (sortSelect) {
+    sortSelect.addEventListener('change', renderProductsTable);
   }
 }
 
@@ -49,13 +57,18 @@ async function renderProductsTable() {
   const tbody = document.getElementById('admin-products-tbody');
   if (!tbody) return;
 
-  const searchVal = document.getElementById('admin-product-search').value.trim();
-  const catVal = document.getElementById('admin-product-filter-category').value;
+  const searchVal = document.getElementById('admin-product-search') ? document.getElementById('admin-product-search').value.trim() : '';
+  const catVal = document.getElementById('admin-product-filter-category') ? document.getElementById('admin-product-filter-category').value : '';
+  const statusVal = document.getElementById('admin-product-filter-status') ? document.getElementById('admin-product-filter-status').value : '';
+  const sortVal = document.getElementById('admin-product-sort') ? document.getElementById('admin-product-sort').value : 'newest';
 
   try {
     let products = await window.api.products.getAll({
+      all: true,
       search: searchVal,
-      category: catVal
+      category: catVal,
+      status: statusVal,
+      sort: sortVal
     });
 
     const params = new URLSearchParams(window.location.search);
@@ -75,7 +88,7 @@ async function renderProductsTable() {
       let highlights = [];
       if (prod.featured) highlights.push('<span class="admin-badge admin-badge-info" style="font-size:0.65rem; margin-bottom: 2px;">Featured</span>');
       if (prod.bestseller) highlights.push('<span class="admin-badge admin-badge-warning" style="font-size:0.65rem; margin-bottom: 2px;">Bestseller</span>');
-      if (prod.newArrival) highlights.push('<span class="admin-badge admin-badge-success" style="font-size:0.65rem; margin-bottom: 2px;">New</span>');
+      if (prod.newArrival || window.isRecentAddition(prod.createdAt)) highlights.push('<span class="admin-badge admin-badge-success" style="font-size:0.65rem; margin-bottom: 2px;">New</span>');
       
       const highlightsHtml = highlights.length > 0 ? highlights.join('<br>') : '<span style="color:var(--text-muted); font-size:0.8rem;">None</span>';
 
@@ -413,3 +426,12 @@ function formatSlugName(slug) {
     }
   });
 })();
+
+// Debounce helper to prevent excessive API requests
+function debounce(func, delay = 300) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), delay);
+  };
+}

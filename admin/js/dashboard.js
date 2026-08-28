@@ -14,9 +14,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Load real data to cards
 async function loadDashboardData() {
   try {
-    // 1. Fetch products & orders
-    const products = await window.api.products.getAll();
-    const orders = await window.api.orders.getAll();
+    // 1. Fetch products & orders in parallel
+    const [products, orders] = await Promise.all([
+      window.api.products.getAll(),
+      window.api.orders.getAll()
+    ]);
 
     // 2. Compute Card Metrics
     // Out of Stock Count
@@ -30,9 +32,9 @@ async function loadDashboardData() {
     const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
     document.getElementById('stat-pending-val').textContent = pendingOrdersCount;
 
-    // Total Revenue (exclude Cancelled orders)
+    // Total Revenue (only include Delivered or Completed orders)
     const revenueVal = orders
-      .filter(o => o.status !== 'Cancelled')
+      .filter(o => o.status === 'Delivered' || o.status === 'Completed')
       .reduce((sum, o) => sum + o.total, 0);
     document.getElementById('stat-revenue-val').textContent = `₹${revenueVal.toLocaleString('en-IN')}`;
 
@@ -47,7 +49,7 @@ async function loadDashboardData() {
 
     const todayOrdersCount = todayOrders.length;
     const todayRevenueVal = todayOrders
-      .filter(o => o.status !== 'Cancelled')
+      .filter(o => o.status === 'Delivered' || o.status === 'Completed')
       .reduce((sum, o) => sum + o.total, 0);
 
     document.getElementById('stat-today-orders-val').textContent = `Today's: ${todayOrdersCount}`;

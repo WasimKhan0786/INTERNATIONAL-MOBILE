@@ -2,6 +2,7 @@
 
 let categorySlug = '';
 let currentSort = 'newest';
+let currentBrand = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
@@ -15,6 +16,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load category details
   await loadCategoryData();
 
+  // Load unique brand filter options
+  await loadBrandDropdown();
+
   // Load and render products
   await loadCategoryProducts();
 
@@ -23,6 +27,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (sortSelect) {
     sortSelect.addEventListener('change', (e) => {
       currentSort = e.target.value;
+      loadCategoryProducts();
+    });
+  }
+
+  // Bind brand selector
+  const brandSelect = document.getElementById('category-brand-select');
+  if (brandSelect) {
+    brandSelect.addEventListener('change', (e) => {
+      currentBrand = e.target.value;
       loadCategoryProducts();
     });
   }
@@ -51,6 +64,25 @@ async function loadCategoryData() {
   }
 }
 
+// Load unique brands for products in this category
+async function loadBrandDropdown() {
+  const brandSelect = document.getElementById('category-brand-select');
+  if (!brandSelect) return;
+
+  try {
+    // Fetch products in this category to get unique brands
+    const products = await window.api.products.getAll({
+      category: categorySlug
+    });
+    const brands = [...new Set(products.map(p => p.brand).filter(Boolean))].sort();
+    
+    brandSelect.innerHTML = '<option value="">All Brands</option>' +
+      brands.map(brand => `<option value="${brand}">${brand}</option>`).join('');
+  } catch (err) {
+    console.error("Failed to load brands dropdown", err);
+  }
+}
+
 // Fetch and render filtered products
 async function loadCategoryProducts() {
   const grid = document.getElementById('category-products-grid');
@@ -62,6 +94,7 @@ async function loadCategoryProducts() {
   try {
     const products = await window.api.products.getAll({
       category: categorySlug,
+      brand: currentBrand,
       sort: currentSort
     });
 
@@ -98,7 +131,7 @@ async function loadCategoryProducts() {
         if (hasDiscount) {
           badgeHtml += `<span class="badge badge-offer">${discountPct}% OFF</span>`;
         }
-        if (prod.newArrival) {
+        if (prod.newArrival || window.isRecentAddition(prod.createdAt)) {
           badgeHtml += `<span class="badge badge-new">New</span>`;
         }
         if (prod.bestseller) {
@@ -129,6 +162,8 @@ async function loadCategoryProducts() {
             <img src="${prod.images[0] ? (prod.images[0].url || prod.images[0]) : ''}" alt="${prod.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'">
           </a>
           <div class="product-badges">${badgeHtml}</div>
+          ${window.getBrandLogoHtml ? window.getBrandLogoHtml(prod.brand) : ''}
+          <button class="product-quickview-btn btn-quick-view" data-id="${prod.id}" title="Quick View"><i class="fa-regular fa-eye"></i></button>
           <button class="product-wishlist-btn" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
         </div>
         <div class="product-info">
@@ -163,6 +198,12 @@ async function loadCategoryProducts() {
         if (success) {
           window.location.href = 'cart.html';
         }
+      });
+
+      // Bind Quick View
+      card.querySelector('.btn-quick-view').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        window.openQuickViewModal(prod.id);
       });
 
       grid.appendChild(card);

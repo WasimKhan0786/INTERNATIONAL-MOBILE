@@ -126,11 +126,19 @@ function setupCategoryEvents() {
   const fileInput = document.getElementById('cat-file-input');
 
   if (uploadCard && fileInput) {
-    uploadCard.addEventListener('click', () => fileInput.click());
+    uploadCard.addEventListener('click', (e) => {
+      if (e.target === fileInput) return;
+      fileInput.click();
+    });
+    
+    fileInput.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
     
     fileInput.addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      fileInput.value = ''; // clear value cache immediately to prevent duplicate runs
 
       try {
         const base64Str = await window.api.uploadImage(file);
@@ -141,8 +149,6 @@ function setupCategoryEvents() {
       } catch (err) {
         window.showToast(err.message, "error");
       }
-      
-      fileInput.value = ''; // clear value cache
     });
   }
 

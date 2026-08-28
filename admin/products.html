@@ -28,17 +28,36 @@
       
       <!-- Actions Bar -->
       <section class="admin-actions-bar">
-        <div style="display: flex; gap: 15px; flex-grow: 1; max-width: 600px;" class="form-grid">
+        <div style="display: flex; gap: 15px; flex-grow: 1; max-width: 800px; flex-wrap: wrap;" class="form-grid">
           <!-- Search box -->
-          <div style="position: relative; flex-grow: 1;">
+          <div style="position: relative; flex-grow: 1; min-width: 200px;">
             <input type="text" id="admin-product-search" placeholder="Search by name, SKU, brand..." style="padding: 10px 14px 10px 36px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); width: 100%;">
             <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
           </div>
           <!-- Category Filter -->
           <div>
-            <select id="admin-product-filter-category" style="padding: 10px 14px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); background-color: white;">
+            <select id="admin-product-filter-category" style="padding: 10px 14px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); background-color: white; width: 100%;">
               <option value="">All Categories</option>
               <!-- Filled dynamically -->
+            </select>
+          </div>
+          <!-- Status Filter -->
+          <div>
+            <select id="admin-product-filter-status" style="padding: 10px 14px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); background-color: white; width: 100%;">
+              <option value="">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <!-- Sorting Options -->
+          <div>
+            <select id="admin-product-sort" style="padding: 10px 14px; border: 1px solid var(--border-admin); border-radius: var(--border-radius-sm); background-color: white; width: 100%;">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="stock-asc">Stock: Low to High</option>
+              <option value="stock-desc">Stock: High to Low</option>
             </select>
           </div>
         </div>

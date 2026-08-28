@@ -28,7 +28,7 @@ const OrderItemSchema = new mongoose.Schema({
   },
   sku: {
     type: String,
-    required: true
+    required: false
   }
 }, { _id: false });
 

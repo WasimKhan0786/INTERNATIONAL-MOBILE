@@ -3,6 +3,15 @@
 let activeStatusFilter = '';
 let selectedOrder = null;
 let currentOrdersList = [];
+let cachedOrders = null;
+
+// Helper to fetch orders and cache them locally
+async function getOrdersData(forceRefetch = false) {
+  if (!cachedOrders || forceRefetch) {
+    cachedOrders = await window.api.orders.getAll();
+  }
+  return cachedOrders;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Sync page load with auth checks
@@ -16,15 +25,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function initializeOrdersPage() {
-  // 1. Render Orders Table
-  await renderOrdersTable();
+  // 1. Render Orders Table (force initial fetch)
+  await renderOrdersTable(true);
 
   // 2. Bind Filter events
   const statusFilter = document.getElementById('admin-orders-filter-status');
   if (statusFilter) {
     statusFilter.addEventListener('change', (e) => {
       activeStatusFilter = e.target.value;
-      renderOrdersTable();
+      renderOrdersTable(false); // filter from cached list
     });
   }
 
@@ -64,12 +73,12 @@ async function initializeOrdersPage() {
   }
 }
 
-async function renderOrdersTable() {
+async function renderOrdersTable(forceRefetch = false) {
   const tbody = document.getElementById('admin-orders-tbody');
   if (!tbody) return;
 
   try {
-    let orders = await window.api.orders.getAll();
+    let orders = await getOrdersData(forceRefetch);
     tbody.innerHTML = '';
 
     // Filter by status dropdown
@@ -232,7 +241,7 @@ async function handleSaveOrderChanges() {
 
     window.showToast("Order changes saved successfully.", "success");
     closeOrderModal();
-    renderOrdersTable(); // Refresh table grid
+    renderOrdersTable(true); // Refresh table grid and force refetch new data
   } catch (err) {
     console.error(err);
     window.showToast("Failed to save changes", "error");
@@ -249,7 +258,7 @@ async function handleDeleteOrder() {
     await window.api.orders.delete(selectedOrder.id);
     window.showToast("Order deleted successfully", "success");
     closeOrderModal();
-    renderOrdersTable(); // Refresh table grid
+    renderOrdersTable(true); // Refresh table grid and force refetch new data
   } catch (err) {
     console.error(err);
     window.showToast("Failed to delete order", "error");
@@ -273,10 +282,13 @@ function exportOrdersToCSV() {
 
   currentOrdersList.forEach(order => {
     const itemsStr = order.products.map(p => `${p.name} [Qty: ${p.quantity}]`).join("; ");
-    const dateStr = new Date(order.createdAt).toLocaleDateString('en-IN', {
+    const dateStr = new Date(order.createdAt).toLocaleString('en-IN', {
       day: 'numeric',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
     });
 
     const row = [

@@ -1,4 +1,6 @@
 const Product = require('../models/Product');
+const Category = require('../models/Category');
+const Order = require('../models/Order');
 const { uploadImage, deleteImage } = require('../services/cloudinary');
 
 exports.getAllProducts = async (req, res) => {
@@ -11,39 +13,44 @@ exports.getAllProducts = async (req, res) => {
       maxPrice,
       inStock,
       sortBy,
+      status,
       all // flag if called from admin side (loads inactive/out-of-stock items)
     } = req.query;
 
-    const query = {};
+    const andConditions = [];
 
-    // 1. Status Filter (Only active on customer side)
+    // 1. Status Filter (Only active on customer side unless explicitly filtered)
     if (!all) {
-      query.status = 'active';
+      andConditions.push({ status: 'active' });
+    } else if (status) {
+      andConditions.push({ status: status });
     }
 
     // 2. Search Keyword
     if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { brand: { $regex: search, $options: 'i' } },
-        { tags: { $regex: search, $options: 'i' } },
-        { sku: { $regex: search, $options: 'i' } }
-      ];
+      andConditions.push({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { brand: { $regex: search, $options: 'i' } },
+          { tags: { $regex: search, $options: 'i' } },
+          { sku: { $regex: search, $options: 'i' } }
+        ]
+      });
     }
 
     // 3. Category Slug
-    if (category && category !== 'accessories') {
-      query.categorySlug = category;
+    if (category) {
+      andConditions.push({ categorySlug: category });
     }
 
     // 4. Brand
     if (brand) {
-      query.brand = brand;
+      andConditions.push({ brand: brand });
     }
 
     // 5. In Stock availability
     if (inStock === 'true') {
-      query.stock = { $gt: 0 };
+      andConditions.push({ stock: { $gt: 0 } });
     }
 
     // 6. Price Boundaries (check against discountPrice or price)
@@ -51,22 +58,20 @@ exports.getAllProducts = async (req, res) => {
       const min = Number(minPrice) || 0;
       const max = Number(maxPrice) || 9999999;
       
-      query.$or = [
-        {
-          discountPrice: { $ne: null },
-          $expr: {
-            $and: [
-              { $gte: ["$discountPrice", min] },
-              { $lte: ["$discountPrice", max] }
-            ]
+      andConditions.push({
+        $or: [
+          {
+            discountPrice: { $gte: min, $lte: max, $ne: null }
+          },
+          {
+            discountPrice: null,
+            price: { $gte: min, $lte: max }
           }
-        },
-        {
-          discountPrice: null,
-          price: { $gte: min, $lte: max }
-        }
-      ];
+        ]
+      });
     }
+
+    const query = andConditions.length > 0 ? { $and: andConditions } : {};
 
     // 7. Sort Settings
     let sort = { createdAt: -1 }; // default newest
@@ -74,15 +79,46 @@ exports.getAllProducts = async (req, res) => {
       sort = { price: 1 };
     } else if (sortBy === 'price-desc') {
       sort = { price: -1 };
-    } else if (sortBy === 'popular') {
+    } else if (sortBy === 'popular' || sortBy === 'bestselling') {
       sort = { rating: -1, reviewsCount: -1 };
+    } else if (sortBy === 'oldest') {
+      sort = { createdAt: 1 };
+    } else if (sortBy === 'stock-asc') {
+      sort = { stock: 1 };
+    } else if (sortBy === 'stock-desc') {
+      sort = { stock: -1 };
     }
 
-    const products = await Product.find(query).sort(sort);
+    const products = await Product.find(query).select('-description -specifications').sort(sort);
+
+    // Fetch orders to calculate dynamic bestsellers based on sales volume
+    let salesMap = {};
+    try {
+      const orders = await Order.find({ status: { $ne: 'Cancelled' } });
+      orders.forEach(order => {
+        (order.products || []).forEach(p => {
+          if (p.id) {
+            salesMap[p.id.toString()] = (salesMap[p.id.toString()] || 0) + (p.quantity || 0);
+          }
+        });
+      });
+    } catch (err) {
+      console.error("Bestseller sales map calculation error", err);
+    }
+
+    const mappedProducts = products.map(prod => {
+      const productObj = prod.toObject();
+      const salesCount = salesMap[productObj._id.toString()] || salesMap[productObj.id] || 0;
+      if (salesCount > 0) {
+        productObj.bestseller = true;
+      }
+      return productObj;
+    });
+
     return res.status(200).json({
       success: true,
-      count: products.length,
-      products
+      count: mappedProducts.length,
+      products: mappedProducts
     });
 
   } catch (err) {
@@ -114,9 +150,31 @@ exports.getProductById = async (req, res) => {
       });
     }
 
+    const productObj = product.toObject();
+    let salesCount = 0;
+    try {
+      const orders = await Order.find({ 
+        status: { $ne: 'Cancelled' },
+        'products.id': productObj._id.toString() 
+      });
+      orders.forEach(order => {
+        (order.products || []).forEach(p => {
+          if (p.id === productObj._id.toString() || p.id === productObj.id) {
+            salesCount += (p.quantity || 0);
+          }
+        });
+      });
+    } catch (err) {
+      console.error("Single product bestseller calculation error", err);
+    }
+
+    if (salesCount > 0) {
+      productObj.bestseller = true;
+    }
+
     return res.status(200).json({
       success: true,
-      product
+      product: productObj
     });
 
   } catch (err) {
@@ -138,6 +196,7 @@ exports.createProduct = async (req, res) => {
       sku,
       price,
       discountPrice,
+      pricePerPiece,
       stock,
       specifications,
       tags,
@@ -147,13 +206,21 @@ exports.createProduct = async (req, res) => {
       status
     } = req.body;
 
-    // Check if SKU already exists (only if provided)
+    // Sanitize and check SKU to prevent duplicate key errors (empty, null, "null", "undefined")
+    let cleanSku = undefined;
     if (sku && sku.trim() !== '') {
-      const skuExists = await Product.findOne({ sku: sku.trim() });
+      const ts = sku.trim();
+      if (ts.toLowerCase() !== 'undefined' && ts.toLowerCase() !== 'null') {
+        cleanSku = ts;
+      }
+    }
+
+    if (cleanSku) {
+      const skuExists = await Product.findOne({ sku: cleanSku });
       if (skuExists) {
         return res.status(400).json({
           success: false,
-          message: `Product with SKU '${sku}' already exists.`
+          message: `Product with SKU '${cleanSku}' already exists.`
         });
       }
     }
@@ -206,9 +273,10 @@ exports.createProduct = async (req, res) => {
       description: description || '',
       categorySlug,
       brand: brand || '',
-      sku: (sku && sku.trim() !== '') ? sku.trim() : undefined,
+      sku: cleanSku,
       price: Number(price),
       discountPrice: discountPrice ? Number(discountPrice) : null,
+      pricePerPiece: pricePerPiece ? Number(pricePerPiece) : null,
       stock: Number(stock),
       images: uploadedImages,
       specifications: parsedSpecs,
@@ -256,6 +324,7 @@ exports.updateProduct = async (req, res) => {
       sku,
       price,
       discountPrice,
+      pricePerPiece,
       stock,
       specifications,
       tags,
@@ -266,13 +335,24 @@ exports.updateProduct = async (req, res) => {
       existingImages // keep tracking of images not deleted
     } = req.body;
 
-    // Check SKU collisions
-    if (sku && sku.trim() !== '' && sku.trim() !== product.sku) {
-      const skuCollision = await Product.findOne({ sku: sku.trim() });
+    // Sanitize and check SKU collisions to prevent duplicate key errors
+    let cleanSku = undefined;
+    const isSkuProvided = sku !== undefined;
+    if (isSkuProvided) {
+      if (sku && sku.trim() !== '') {
+        const ts = sku.trim();
+        if (ts.toLowerCase() !== 'undefined' && ts.toLowerCase() !== 'null') {
+          cleanSku = ts;
+        }
+      }
+    }
+
+    if (isSkuProvided && cleanSku && cleanSku !== product.sku) {
+      const skuCollision = await Product.findOne({ sku: cleanSku });
       if (skuCollision) {
         return res.status(400).json({
           success: false,
-          message: `Product with SKU '${sku}' already exists.`
+          message: `Product with SKU '${cleanSku}' already exists.`
         });
       }
     }
@@ -344,9 +424,12 @@ exports.updateProduct = async (req, res) => {
     product.description = description !== undefined ? description : product.description;
     product.categorySlug = categorySlug || product.categorySlug;
     product.brand = brand !== undefined ? brand : product.brand;
-    product.sku = sku !== undefined ? ((sku && sku.trim() !== '') ? sku.trim() : undefined) : product.sku;
+    if (isSkuProvided) {
+      product.sku = cleanSku;
+    }
     product.price = price !== undefined ? Number(price) : product.price;
     product.discountPrice = discountPrice !== undefined ? (discountPrice ? Number(discountPrice) : null) : product.discountPrice;
+    product.pricePerPiece = pricePerPiece !== undefined ? (pricePerPiece ? Number(pricePerPiece) : null) : product.pricePerPiece;
     product.stock = stock !== undefined ? Number(stock) : product.stock;
     product.specifications = parsedSpecs;
     product.tags = parsedTags;

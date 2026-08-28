@@ -57,11 +57,13 @@ async function prefillProductData(id) {
     // Fill text inputs
     document.getElementById('prod-name').value = product.name;
     document.getElementById('prod-brand').value = product.brand;
-    document.getElementById('prod-sku').value = product.sku;
+    document.getElementById('prod-sku').value = product.sku || '';
     document.getElementById('prod-category').value = product.categorySlug;
     document.getElementById('prod-stock').value = product.stock;
     document.getElementById('prod-price').value = product.price;
     document.getElementById('prod-discount-price').value = product.discountPrice || '';
+    const pieceInput = document.getElementById('prod-price-per-piece');
+    if (pieceInput) pieceInput.value = product.pricePerPiece || '';
     document.getElementById('prod-desc').value = product.description;
     document.getElementById('prod-tags').value = product.tags ? product.tags.join(', ') : '';
 
@@ -122,11 +124,19 @@ function setupFormEvents() {
   const fileInput = document.getElementById('prod-file-input');
 
   if (uploadCard && fileInput) {
-    uploadCard.addEventListener('click', () => fileInput.click());
+    uploadCard.addEventListener('click', (e) => {
+      if (e.target === fileInput) return;
+      fileInput.click();
+    });
+    
+    fileInput.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
     
     fileInput.addEventListener('change', async (e) => {
-      const files = e.target.files;
+      const files = Array.from(e.target.files);
       if (files.length === 0) return;
+      fileInput.value = ''; // clear input cache immediately to prevent duplicate runs
 
       let successCount = 0;
       let errorMsgs = [];
@@ -149,8 +159,6 @@ function setupFormEvents() {
       if (errorMsgs.length > 0) {
         window.showToast(errorMsgs[0], "error");
       }
-      
-      fileInput.value = ''; // clear input cache
     });
   }
 
@@ -218,6 +226,10 @@ async function handleFormSubmit(e) {
   const discountIn = document.getElementById('prod-discount-price').value;
   const discountPrice = discountIn ? parseFloat(discountIn) : null;
 
+  const pieceInputEl = document.getElementById('prod-price-per-piece');
+  const pricePerPieceIn = pieceInputEl ? pieceInputEl.value : null;
+  const pricePerPiece = pricePerPieceIn ? parseFloat(pricePerPieceIn) : null;
+
   const description = document.getElementById('prod-desc').value.trim();
   const tagsStr = document.getElementById('prod-tags').value.trim();
   
@@ -253,6 +265,7 @@ async function handleFormSubmit(e) {
     stock,
     price,
     discountPrice,
+    pricePerPiece,
     description,
     tags,
     specifications,

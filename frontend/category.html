@@ -37,15 +37,24 @@
       <div class="shop-results-count" id="category-count-label">
         Showing 0 products
       </div>
-      <div class="shop-sorting">
-        <label for="category-sort-select" style="font-size: 0.9rem; font-weight: 600; margin-right: 5px;">Sort By:</label>
-        <select id="category-sort-select">
-          <option value="newest">Newest Arrivals</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="bestselling">Popularity</option>
-          <option value="discount">Biggest Discount</option>
-        </select>
+      <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+        <div class="shop-sorting">
+          <label for="category-brand-select" style="font-size: 0.9rem; font-weight: 600; margin-right: 5px;">Brand:</label>
+          <select id="category-brand-select">
+            <option value="">All Brands</option>
+            <!-- Loaded dynamically -->
+          </select>
+        </div>
+        <div class="shop-sorting">
+          <label for="category-sort-select" style="font-size: 0.9rem; font-weight: 600; margin-right: 5px;">Sort By:</label>
+          <select id="category-sort-select">
+            <option value="newest">Newest Arrivals</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="bestselling">Popularity</option>
+            <option value="discount">Biggest Discount</option>
+          </select>
+        </div>
       </div>
     </div>
 

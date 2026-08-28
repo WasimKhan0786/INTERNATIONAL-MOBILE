@@ -78,31 +78,7 @@ exports.createOrder = async (req, res) => {
     const randStr = Math.floor(1000 + Math.random() * 9000);
     const orderNumber = `ORD-${dateStr}-${randStr}`;
 
-    // 2. Validate Stock and Deduct
-    for (const item of products) {
-      const prod = await Product.findById(item.id);
-      if (!prod) {
-        return res.status(400).json({
-          success: false,
-          message: `Product ${item.name} not found in database.`
-        });
-      }
-      if (prod.stock < item.quantity) {
-        return res.status(400).json({
-          success: false,
-          message: `Insufficient stock for ${prod.name}. Only ${prod.stock} units available.`
-        });
-      }
-    }
-
-    // Deduct stock after validation
-    for (const item of products) {
-      await Product.findByIdAndUpdate(item.id, {
-        $inc: { stock: -item.quantity }
-      });
-    }
-
-    // 3. Create Order
+    // 2. Instantiate and Validate Order Payload structure before mutating stock
     const newOrder = new Order({
       orderNumber,
       customerName,
@@ -122,6 +98,34 @@ exports.createOrder = async (req, res) => {
       orderNotes: orderNotes || ''
     });
 
+    // Run Mongoose schema validation first
+    await newOrder.validate();
+
+    // 3. Validate Stock
+    for (const item of products) {
+      const prod = await Product.findById(item.id);
+      if (!prod) {
+        return res.status(400).json({
+          success: false,
+          message: `Product ${item.name} not found in database.`
+        });
+      }
+      if (prod.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Insufficient stock for ${prod.name}. Only ${prod.stock} units available.`
+        });
+      }
+    }
+
+    // 4. Deduct stock after validation succeeds
+    for (const item of products) {
+      await Product.findByIdAndUpdate(item.id, {
+        $inc: { stock: -item.quantity }
+      });
+    }
+
+    // 5. Save order details
     await newOrder.save();
 
     return res.status(201).json({

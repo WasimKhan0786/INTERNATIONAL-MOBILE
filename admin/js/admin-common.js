@@ -75,7 +75,7 @@ function injectAdminLayout(session, settings) {
         <h1 class="admin-header-title">${pageTitle}</h1>
       </div>
       <div class="admin-header-actions">
-        <a href="../frontend/index.html" class="btn btn-outline btn-sm" target="_blank" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-globe"></i> View Site</a>
+        <a href="../frontend/index.html" class="btn btn-outline btn-sm" target="_blank" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-globe"></i> <span>View Site</span></a>
         <div style="display: flex; align-items: center; gap: 10px;">
           <div style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700;">
             A

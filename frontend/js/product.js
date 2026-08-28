@@ -3,6 +3,7 @@
 let currentProduct = null;
 let currentQuantity = 1;
 let selectedRating = 5;
+let currentSlideIndex = 0;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const params = new URLSearchParams(window.location.search);
@@ -48,6 +49,28 @@ async function loadProductDetails(id) {
     }
     if (nameBreadcrumb) nameBreadcrumb.textContent = product.name;
 
+    // Render Detail Badges
+    const badgeContainer = document.getElementById('detail-badges');
+    if (badgeContainer) {
+      badgeContainer.innerHTML = '';
+      let badgeHtml = '';
+      
+      const isNew = product.newArrival || window.isRecentAddition(product.createdAt);
+      if (isNew) {
+        badgeHtml += `<span class="badge badge-new"><i class="fa-solid fa-fire" style="margin-right: 4px;"></i> New</span>`;
+      }
+      if (product.bestseller) {
+        badgeHtml += `<span class="badge badge-bestseller"><i class="fa-solid fa-crown" style="margin-right: 4px;"></i> Bestseller</span>`;
+      }
+      const hasDiscountVal = product.discountPrice && product.discountPrice < product.price;
+      if (hasDiscountVal) {
+        const savingPctVal = Math.round(((product.price - product.discountPrice) / product.price) * 100);
+        badgeHtml += `<span class="badge badge-offer"><i class="fa-solid fa-tag" style="margin-right: 4px;"></i> ${savingPctVal}% OFF</span>`;
+      }
+      
+      badgeContainer.innerHTML = badgeHtml;
+    }
+
     // 2. Titles & Info
     document.getElementById('detail-brand').textContent = product.brand;
     document.getElementById('detail-title').textContent = product.name;
@@ -71,6 +94,18 @@ async function loadProductDetails(id) {
     } else {
       origPriceEl.style.display = 'none';
       savingEl.style.display = 'none';
+    }
+
+    // Price Per Piece display
+    const pieceBox = document.getElementById('detail-price-per-piece-box');
+    const pieceVal = document.getElementById('detail-price-per-piece-val');
+    if (pieceBox && pieceVal) {
+      if (product.pricePerPiece && Number(product.pricePerPiece) > 0) {
+        pieceVal.textContent = `₹${product.pricePerPiece}`;
+        pieceBox.style.display = 'block';
+      } else {
+        pieceBox.style.display = 'none';
+      }
     }
 
     // 4. Stock status
@@ -414,9 +449,58 @@ async function loadReviews() {
       listEl.appendChild(revCard);
     });
 
+    // Reset slide position & bind controls
+    currentSlideIndex = 0;
+    setupReviewsCarousel();
+
   } catch (err) {
     console.error(err);
   }
+}
+
+// Bind reviews carousel/slider controls
+function setupReviewsCarousel() {
+  const prevBtn = document.getElementById('btn-review-prev');
+  const nextBtn = document.getElementById('btn-review-next');
+  const track = document.getElementById('product-reviews-list');
+  
+  if (!prevBtn || !nextBtn || !track) return;
+
+  // Unbind old events if setupReviewsCarousel is recalled
+  const newPrev = prevBtn.cloneNode(true);
+  const newNext = nextBtn.cloneNode(true);
+  prevBtn.parentNode.replaceChild(newPrev, prevBtn);
+  nextBtn.parentNode.replaceChild(newNext, nextBtn);
+
+  const updateSlidePosition = () => {
+    const card = track.querySelector('.review-card');
+    if (!card) return;
+    const cardWidth = card.offsetWidth + 20; // card width + gap
+    track.style.transform = `translateX(-${currentSlideIndex * cardWidth}px)`;
+  };
+
+  // Reset track translation
+  track.style.transform = 'translateX(0)';
+
+  newPrev.addEventListener('click', () => {
+    if (currentSlideIndex > 0) {
+      currentSlideIndex--;
+      updateSlidePosition();
+    }
+  });
+
+  newNext.addEventListener('click', () => {
+    const cards = track.querySelectorAll('.review-card');
+    const visibleCards = window.innerWidth >= 768 ? 2 : 1;
+    const maxIndex = cards.length - visibleCards;
+    if (currentSlideIndex < maxIndex) {
+      currentSlideIndex++;
+      updateSlidePosition();
+    }
+  });
+
+  // Re-align on window resize
+  window.addEventListener('resize', updateSlidePosition);
 }
 
 // Submit custom review
@@ -429,7 +513,7 @@ async function handleReviewSubmit(e) {
   if (!nameInput || !commentInput) return;
 
   try {
-    await window.api.reviews.add({
+    await window.api.reviews.create({
       name: nameInput.value.trim(),
       rating: selectedRating,
       comment: commentInput.value.trim()
@@ -482,7 +566,7 @@ async function loadRelatedProducts(slug, currentId) {
         if (hasDiscount) {
           badgeHtml += `<span class="badge badge-offer">${discountPct}% OFF</span>`;
         }
-        if (prod.newArrival) {
+        if (prod.newArrival || window.isRecentAddition(prod.createdAt)) {
           badgeHtml += `<span class="badge badge-new">New</span>`;
         }
         if (prod.bestseller) {
