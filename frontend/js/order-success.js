@@ -75,18 +75,6 @@ Please confirm my order and let me know the estimated delivery time. Thank you! 
       whatsappBtn.href = whatsappUrl;
     }
 
-    // Auto redirect to WhatsApp in a new tab
-    setTimeout(() => {
-      try {
-        const waWindow = window.open(whatsappUrl, '_blank');
-        if (!waWindow || waWindow.closed || typeof waWindow.closed === 'undefined') {
-          console.log("Popup blocker prevented automatic redirection. User can click button manually.");
-        }
-      } catch (e) {
-        console.error("Auto redirect failed", e);
-      }
-    }, 1200);
-
   } catch (err) {
     console.error("Failed to load order receipt info", err);
     window.showToast("Failed to load order receipt details.", "error");
