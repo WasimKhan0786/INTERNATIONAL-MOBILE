@@ -130,17 +130,18 @@ async function loadProductDetails(id) {
 
     // 5. Image gallery
     const mainImg = document.getElementById('gallery-main-image');
-    mainImg.src = product.images[0] ? (product.images[0].url || product.images[0]) : '';
+    mainImg.src = window.getOptimizedImageUrl(product.images[0], { width: 800 });
     mainImg.alt = product.name;
 
     const thumbRow = document.getElementById('gallery-thumbnails-row');
     if (thumbRow) {
       thumbRow.innerHTML = product.images.map((imgObj, idx) => {
-        const imgUrl = imgObj && imgObj.url ? imgObj.url : imgObj;
+        const imgUrl = window.getOptimizedImageUrl(imgObj, { width: 800 });
+        const thumbUrl = window.getOptimizedImageUrl(imgObj, { width: 150 });
         const activeClass = idx === 0 ? 'active' : '';
         return `
           <div class="gallery-thumb-item ${activeClass}" data-image-url="${imgUrl}">
-            <img src="${imgUrl}" alt="${product.name}">
+            <img src="${thumbUrl}" alt="${product.name}">
           </div>
         `;
       }).join('');
@@ -582,7 +583,7 @@ async function loadRelatedProducts(slug, currentId) {
       card.innerHTML = `
         <div class="product-image-container">
           <a href="product.html?id=${prod.id}">
-            <img src="${prod.images[0] ? (prod.images[0].url || prod.images[0]) : ''}" alt="${prod.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'">
+            <img src="${window.getOptimizedImageUrl(prod.images[0], { width: 600 })}" alt="${prod.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'">
           </a>
           <div class="product-badges">${badgeHtml}</div>
           <button class="product-wishlist-btn" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>

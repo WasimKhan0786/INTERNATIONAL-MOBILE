@@ -86,7 +86,33 @@ const deleteImage = async (publicId) => {
   });
 };
 
+/**
+ * Helper to construct optimized Cloudinary URLs with dynamic quality and width parameters
+ */
+const getOptimizedImageUrl = (url, options = {}) => {
+  if (!url || typeof url !== 'string') return url;
+
+  const width = options.width || 800;
+  const quality = options.quality || 'auto';
+  const crop = options.crop || 'limit';
+
+  if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+    if (url.includes('/upload/f_auto,q_auto') || url.includes('/upload/q_auto')) {
+      return url;
+    }
+    return url.replace('upload/', `upload/f_auto,q_${quality},w_${width},c_${crop}/`);
+  }
+
+  if (url.includes('images.unsplash.com')) {
+    const cleanUrl = url.split('?')[0];
+    return `${cleanUrl}?w=${width}&auto=format&fit=crop&q=80`;
+  }
+
+  return url;
+};
+
 module.exports = {
   uploadImage,
-  deleteImage
+  deleteImage,
+  getOptimizedImageUrl
 };

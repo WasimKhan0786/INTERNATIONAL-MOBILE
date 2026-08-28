@@ -106,7 +106,7 @@ async function renderProductsTable() {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td data-label="Image">
-          <img src="${prod.images[0] ? (prod.images[0].url || prod.images[0]) : ''}" alt="${prod.name}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border:1px solid var(--border-admin);" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80'">
+          <img src="${window.getOptimizedImageUrl ? window.getOptimizedImageUrl(prod.images[0], { width: 150 }) : (prod.images[0] ? (prod.images[0].url || prod.images[0]) : '')}" alt="${prod.name}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px; border:1px solid var(--border-admin);" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80'">
         </td>
         <td data-label="Product Info">
           <strong style="font-size:0.95rem; color:var(--text-dark);">${prod.name}</strong><br>

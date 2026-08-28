@@ -51,7 +51,7 @@ async function renderCart() {
     
     row.innerHTML = `
       <div class="cart-item-img">
-        <img src="${item.image}" alt="${item.name}" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80'">
+        <img src="${window.getOptimizedImageUrl(item.image, { width: 200 })}" alt="${item.name}" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80'">
       </div>
       <div class="cart-item-details">
         <div class="cart-item-brand">${item.brand}</div>

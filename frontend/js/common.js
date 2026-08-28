@@ -822,6 +822,42 @@ window.isRecentAddition = function(createdAt) {
   return diffDays <= 7;
 };
 
+// Global helper to format Cloudinary & Unsplash CDN images with automatic format, compression, and width transformations
+window.getOptimizedImageUrl = function(rawUrl, options = {}) {
+  let url = rawUrl;
+  if (!url) {
+    return 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80';
+  }
+  if (typeof rawUrl === 'object' && rawUrl !== null) {
+    url = rawUrl.url || rawUrl.secure_url || '';
+  }
+
+  if (typeof url !== 'string' || !url.trim()) {
+    return 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80';
+  }
+
+  const width = options.width || 600;
+  const quality = options.quality || 'auto';
+  const crop = options.crop || 'limit';
+
+  // 1. Cloudinary URL optimization
+  if (url.includes('res.cloudinary.com') && url.includes('/upload/')) {
+    if (url.includes('/upload/f_auto,q_auto') || url.includes('/upload/q_auto')) {
+      return url;
+    }
+    const transformStr = `upload/f_auto,q_${quality},w_${width},c_${crop}/`;
+    return url.replace('upload/', transformStr);
+  }
+
+  // 2. Unsplash URL optimization
+  if (url.includes('images.unsplash.com')) {
+    const cleanUrl = url.split('?')[0];
+    return `${cleanUrl}?w=${width}&auto=format&fit=crop&q=80`;
+  }
+
+  return url;
+};
+
 // Global helper to render premium brand logo badges
 window.getBrandLogoHtml = function(brandName) {
   if (!brandName) return '';
@@ -909,13 +945,13 @@ window.openQuickViewModal = async function(productId) {
         <!-- Images Column -->
         <div style="display: flex; flex-direction: column; gap: 15px;">
           <div style="width: 100%; aspect-ratio: 1; background: var(--bg-light); border-radius: var(--border-radius-sm); overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color);">
-            <img id="quickview-main-image" src="${product.images[0] ? (product.images[0].url || product.images[0]) : ''}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: contain;">
+            <img id="quickview-main-image" src="${window.getOptimizedImageUrl(product.images[0], { width: 800 })}" alt="${product.name}" style="width: 100%; height: 100%; object-fit: contain;">
           </div>
           <!-- Thumbnail Row -->
           <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
             ${product.images.map((img, idx) => `
-              <div class="quick-thumb-wrapper ${idx === 0 ? 'active' : ''}" data-img-url="${img.url || img}" style="width: 60px; height: 60px; border-radius: var(--border-radius-sm); overflow: hidden; border: 2px solid ${idx === 0 ? 'var(--primary-color)' : 'var(--border-color)'}; cursor: pointer; flex-shrink: 0;">
-                <img src="${img.url || img}" alt="thumb" style="width: 100%; height: 100%; object-fit: cover;">
+              <div class="quick-thumb-wrapper ${idx === 0 ? 'active' : ''}" data-img-url="${window.getOptimizedImageUrl(img, { width: 800 })}" style="width: 60px; height: 60px; border-radius: var(--border-radius-sm); overflow: hidden; border: 2px solid ${idx === 0 ? 'var(--primary-color)' : 'var(--border-color)'}; cursor: pointer; flex-shrink: 0;">
+                <img src="${window.getOptimizedImageUrl(img, { width: 150 })}" alt="thumb" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
             `).join('')}
           </div>

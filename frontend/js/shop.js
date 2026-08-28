@@ -379,7 +379,7 @@ function renderNextBatch() {
     card.innerHTML = `
       <div class="product-image-container">
         <a href="product.html?id=${prod.id}">
-          <img src="${prod.images[0] ? (prod.images[0].url || prod.images[0]) : ''}" alt="${prod.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'">
+          <img src="${window.getOptimizedImageUrl(prod.images[0], { width: 600 })}" alt="${prod.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80'">
         </a>
         <div class="product-badges">${badgeHtml}</div>
         ${window.getBrandLogoHtml ? window.getBrandLogoHtml(prod.brand) : ''}
