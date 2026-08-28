@@ -62,7 +62,7 @@ async function renderCart() {
         <!-- Qty controls -->
         <div class="qty-control">
           <button class="qty-btn btn-cart-minus" data-id="${item.id}" data-qty="${item.quantity}"><i class="fa-solid fa-minus"></i></button>
-          <input type="number" class="qty-input" value="${item.quantity}" readonly>
+          <input type="number" class="qty-input cart-qty-input" data-id="${item.id}" value="${item.quantity}" min="1">
           <button class="qty-btn btn-cart-plus" data-id="${item.id}" data-qty="${item.quantity}"><i class="fa-solid fa-plus"></i></button>
         </div>
         <!-- Item Total -->
@@ -93,6 +93,48 @@ async function renderCart() {
         }
       } catch (err) {
         console.error(err);
+      }
+    });
+
+    // Bind manual inputs for cart items
+    const manualInput = row.querySelector('.cart-qty-input');
+    
+    manualInput.addEventListener('input', async (e) => {
+      const val = parseInt(e.target.value);
+      if (isNaN(val)) return; // Allow typing
+      if (val < 1) {
+        e.target.value = 1;
+        window.cart.update(item.id, 1);
+        return;
+      }
+      try {
+        const prod = await window.api.products.getById(item.id);
+        if (val > prod.stock) {
+          window.showToast(`Only ${prod.stock} units of this accessory are available in stock.`, "error");
+          e.target.value = prod.stock;
+          window.cart.update(item.id, prod.stock);
+        } else {
+          window.cart.update(item.id, val);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    manualInput.addEventListener('change', async (e) => {
+      let val = parseInt(e.target.value);
+      if (isNaN(val) || val < 1) val = 1;
+      try {
+        const prod = await window.api.products.getById(item.id);
+        if (val > prod.stock) {
+          window.showToast(`Only ${prod.stock} units of this accessory are available in stock.`, "error");
+          val = prod.stock;
+        }
+        e.target.value = val;
+        window.cart.update(item.id, val);
+      } catch (err) {
+        console.error(err);
+        e.target.value = item.quantity;
       }
     });
 

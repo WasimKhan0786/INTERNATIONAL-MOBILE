@@ -241,6 +241,31 @@ function setupQuantitySelector() {
       window.showToast("Cannot select more than available stock limit.", "error");
     }
   };
+
+  qtyInput.oninput = () => {
+    let val = parseInt(qtyInput.value);
+    if (isNaN(val)) return; // Allow typing
+    if (val < 1) val = 1;
+    if (val > currentProduct.stock) {
+      window.showToast(`Only ${currentProduct.stock} units of this accessory are available in stock.`, "error");
+      val = currentProduct.stock;
+    }
+    currentQuantity = val;
+    qtyInput.value = val;
+    triggerQuantityUpdate();
+  };
+
+  qtyInput.onchange = () => {
+    let val = parseInt(qtyInput.value);
+    if (isNaN(val) || val < 1) val = 1;
+    if (val > currentProduct.stock) {
+      window.showToast(`Only ${currentProduct.stock} units of this accessory are available in stock.`, "error");
+      val = currentProduct.stock;
+    }
+    currentQuantity = val;
+    qtyInput.value = val;
+    triggerQuantityUpdate();
+  };
 }
 
 async function triggerQuantityUpdate() {
