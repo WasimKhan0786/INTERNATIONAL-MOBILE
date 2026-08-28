@@ -51,18 +51,10 @@ async function renderCheckoutSummary(items) {
 
   // Calculate prices
   subtotalVal = window.cart.getSubtotal();
-  const settings = await window.api.settings.get();
+  deliveryVal = 0;
+  totalVal = subtotalVal;
   
   if (subtotalEl) subtotalEl.textContent = `₹${subtotalVal}`;
-
-  const threshold = settings.freeDeliveryThreshold;
-  deliveryVal = subtotalVal >= threshold ? 0 : settings.deliveryCharge;
-
-  if (deliveryEl) {
-    deliveryEl.textContent = deliveryVal === 0 ? 'FREE' : `₹${deliveryVal}`;
-  }
-
-  totalVal = subtotalVal + deliveryVal;
   if (totalEl) totalEl.textContent = `₹${totalVal}`;
 }
 

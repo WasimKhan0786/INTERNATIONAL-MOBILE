@@ -25,8 +25,6 @@ async function loadOrderReceipt(orderId) {
     document.getElementById('detail-mobile').textContent = order.mobile;
     document.getElementById('detail-address').textContent = `${order.address}, ${order.city}, ${order.state} - ${order.pincode}`;
     document.getElementById('detail-subtotal').textContent = `₹${order.subtotal}`;
-    
-    document.getElementById('detail-delivery').textContent = order.deliveryCharge === 0 ? 'FREE' : `₹${order.deliveryCharge}`;
     document.getElementById('detail-total').textContent = `₹${order.total}`;
 
     // Build WhatsApp Confirmation Message
@@ -59,7 +57,6 @@ ${itemsText}
 
 💵 *BILLING DETAILS:*
 • *Subtotal:* ₹${order.subtotal}
-• *Delivery Charge:* ${order.deliveryCharge === 0 ? 'FREE' : '₹' + order.deliveryCharge}
 • *Total Amount:* *₹${order.total}*
 • *Payment Method:* Cash on Delivery (COD)
 -----------------------------------

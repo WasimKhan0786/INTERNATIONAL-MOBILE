@@ -112,37 +112,9 @@ async function renderCart() {
 // Subtotal & Shipping summary card
 async function renderSummary() {
   const subtotalEl = document.getElementById('summary-subtotal');
-  const deliveryEl = document.getElementById('summary-delivery');
   const totalEl = document.getElementById('summary-total');
-  const shippingMsg = document.getElementById('free-shipping-msg');
-  const shippingBox = document.getElementById('free-shipping-bar-box');
 
   const subtotal = window.cart.getSubtotal();
-  const settings = await window.api.settings.get();
-  
   if (subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
-  
-  let deliveryFee = settings.deliveryCharge;
-  const threshold = settings.freeDeliveryThreshold;
-
-  if (subtotal >= threshold) {
-    deliveryFee = 0;
-    if (deliveryEl) deliveryEl.textContent = 'FREE';
-    if (shippingMsg) shippingMsg.textContent = 'Congratulations! Your order qualifies for FREE Delivery.';
-    if (shippingBox) {
-      shippingBox.style.borderLeftColor = 'var(--success)';
-      shippingBox.style.backgroundColor = 'rgba(16, 185, 129, 0.05)';
-    }
-  } else {
-    if (deliveryEl) deliveryEl.textContent = `₹${deliveryFee}`;
-    const diff = threshold - subtotal;
-    if (shippingMsg) shippingMsg.textContent = `Add ₹${diff} more for FREE Delivery!`;
-    if (shippingBox) {
-      shippingBox.style.borderLeftColor = 'var(--primary-color)';
-      shippingBox.style.backgroundColor = 'rgba(255, 87, 34, 0.05)';
-    }
-  }
-
-  const grandTotal = subtotal + deliveryFee;
-  if (totalEl) totalEl.textContent = `₹${grandTotal}`;
+  if (totalEl) totalEl.textContent = `₹${subtotal}`;
 }
