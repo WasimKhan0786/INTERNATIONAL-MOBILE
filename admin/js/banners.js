@@ -3,14 +3,12 @@
 let bannerImage = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Sync page load with auth checks
-  const checkSession = setInterval(async () => {
-    const session = await window.api.auth.me();
-    if (session) {
-      clearInterval(checkSession);
-      initializeBannersPage();
-    }
-  }, 100);
+  const session = await window.api.auth.me();
+  if (session) {
+    initializeBannersPage();
+  } else {
+    window.location.href = 'login.html';
+  }
 });
 
 function initializeBannersPage() {

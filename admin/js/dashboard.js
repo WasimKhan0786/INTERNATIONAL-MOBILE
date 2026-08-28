@@ -1,14 +1,12 @@
 // TechZone Mobile Accessories - Admin Dashboard Controller
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Sync page load with admin guard completion
-  const checkSession = setInterval(async () => {
-    const session = await window.api.auth.me();
-    if (session) {
-      clearInterval(checkSession);
-      loadDashboardData();
-    }
-  }, 100);
+  const session = await window.api.auth.me();
+  if (session) {
+    loadDashboardData();
+  } else {
+    window.location.href = 'login.html';
+  }
 });
 
 // Load real data to cards

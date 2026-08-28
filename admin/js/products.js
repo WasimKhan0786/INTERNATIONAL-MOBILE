@@ -3,14 +3,12 @@
 let categoriesList = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Sync page load with auth checks
-  const checkSession = setInterval(async () => {
-    const session = await window.api.auth.me();
-    if (session) {
-      clearInterval(checkSession);
-      initializeProductsPage();
-    }
-  }, 100);
+  const session = await window.api.auth.me();
+  if (session) {
+    initializeProductsPage();
+  } else {
+    window.location.href = 'login.html';
+  }
 });
 
 async function initializeProductsPage() {

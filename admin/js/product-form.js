@@ -5,14 +5,12 @@ let editProductId = null;
 let uploadedImages = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Sync page load with auth checks
-  const checkSession = setInterval(async () => {
-    const session = await window.api.auth.me();
-    if (session) {
-      clearInterval(checkSession);
-      initializeProductForm();
-    }
-  }, 100);
+  const session = await window.api.auth.me();
+  if (session) {
+    initializeProductForm();
+  } else {
+    window.location.href = 'login.html';
+  }
 });
 
 async function initializeProductForm() {
