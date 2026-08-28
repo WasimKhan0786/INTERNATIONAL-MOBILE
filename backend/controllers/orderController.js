@@ -189,10 +189,11 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
-    const oldStatus = order.status;
+    const oldStatusLower = (oldStatus || '').toLowerCase();
+    const newStatusLower = (status || '').toLowerCase();
 
     // Restore stock if transitioning to Cancelled
-    if (status === 'Cancelled' && oldStatus !== 'Cancelled') {
+    if (newStatusLower === 'cancelled' && oldStatusLower !== 'cancelled') {
       for (const item of order.products) {
         await Product.findByIdAndUpdate(item.id, {
           $inc: { stock: item.quantity }
@@ -201,7 +202,7 @@ exports.updateOrderStatus = async (req, res) => {
     }
 
     // Re-deduct stock if recovering from Cancelled status
-    if (oldStatus === 'Cancelled' && status !== 'Cancelled') {
+    if (oldStatusLower === 'cancelled' && newStatusLower !== 'cancelled') {
       for (const item of order.products) {
         await Product.findByIdAndUpdate(item.id, {
           $inc: { stock: -item.quantity }
@@ -279,7 +280,7 @@ exports.deleteOrder = async (req, res) => {
     }
 
     // Restore stock if deleting a non-cancelled order
-    if (order.status !== 'Cancelled') {
+    if ((order.status || '').toLowerCase() !== 'cancelled') {
       for (const item of order.products) {
         await Product.findByIdAndUpdate(item.id, {
           $inc: { stock: item.quantity }
