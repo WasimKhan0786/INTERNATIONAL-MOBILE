@@ -83,7 +83,7 @@ exports.createOrder = async (req, res) => {
     const sanitizedProducts = (products || []).map(p => ({
       id: (p.id || p._id || '').toString(),
       name: p.name || 'Mobile Accessory',
-      brand: p.brand || '',
+      brand: p.brand || 'Generic',
       price: Number(p.price || 0),
       image: p.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80',
       quantity: Number(p.quantity || 1),
@@ -109,11 +109,9 @@ exports.createOrder = async (req, res) => {
       orderNotes: orderNotes || ''
     });
 
-    // Run Mongoose schema validation first
-    await newOrder.validate();
-
     // 3. Validate Stock & ObjectId formats
-    for (const item of sanitizedProducts) {
+    for (let i = 0; i < sanitizedProducts.length; i++) {
+      const item = sanitizedProducts[i];
       if (!item.id || !mongoose.Types.ObjectId.isValid(item.id)) {
         return res.status(400).json({
           success: false,
@@ -128,6 +126,17 @@ exports.createOrder = async (req, res) => {
           message: `Product '${item.name}' was not found in database inventory.`
         });
       }
+
+      // Populate actual fields from DB if defaults were used
+      if (item.brand === 'Generic' && prod.brand) {
+        item.brand = prod.brand;
+        newOrder.products[i].brand = prod.brand;
+      }
+      if (item.name === 'Mobile Accessory' && prod.name) {
+        item.name = prod.name;
+        newOrder.products[i].name = prod.name;
+      }
+
       if (prod.stock < item.quantity) {
         return res.status(400).json({
           success: false,
@@ -135,6 +144,9 @@ exports.createOrder = async (req, res) => {
         });
       }
     }
+
+    // Run Mongoose schema validation after sync
+    await newOrder.validate();
 
     // 4. Deduct stock after validation succeeds
     for (const item of sanitizedProducts) {
