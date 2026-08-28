@@ -189,7 +189,7 @@ exports.updateOrderStatus = async (req, res) => {
       });
     }
 
-    const oldStatusLower = (oldStatus || '').toLowerCase();
+    const oldStatusLower = (order.status || '').toLowerCase();
     const newStatusLower = (status || '').toLowerCase();
 
     // Restore stock if transitioning to Cancelled
