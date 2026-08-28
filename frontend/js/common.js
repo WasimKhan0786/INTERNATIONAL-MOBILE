@@ -146,6 +146,38 @@ const cart = {
         }
       }
     });
+  },
+
+  async syncWithBackend() {
+    try {
+      if (!window.api || !window.api.products) return;
+      const products = await window.api.products.getAll({ all: true });
+      
+      const buttons = document.querySelectorAll('.btn-add-to-cart, .add-cart-btn, #btn-detail-add-cart, #quickview-add-cart');
+      buttons.forEach(btn => {
+        const prodId = btn.dataset.id;
+        if (!prodId) return;
+        const dbProd = products.find(p => p.id === prodId || p._id === prodId);
+        if (dbProd) {
+          btn.dataset.stock = dbProd.stock;
+        }
+      });
+
+      // Update detail page loaded product reference
+      if (window.loadedProduct) {
+        const dbProd = products.find(p => p.id === window.loadedProduct.id || p._id === window.loadedProduct.id);
+        if (dbProd) {
+          window.loadedProduct.stock = dbProd.stock;
+          if (typeof window.updateProductDetailStockDisplay === 'function') {
+            window.updateProductDetailStockDisplay();
+          }
+        }
+      }
+
+      this.updateDOMButtons();
+    } catch (err) {
+      console.error("Failed to sync stock with backend:", err);
+    }
   }
 };
 
@@ -262,6 +294,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Update initial cart badge count
   cart.updateBadge();
   cart.updateDOMButtons();
+  cart.syncWithBackend();
   
   // Initialize Search Bars
   initSearchEvent();
@@ -1114,3 +1147,16 @@ window.openQuickViewModal = async function(productId) {
     window.showToast("Failed to load Quick View details.", "error");
   }
 };
+
+// Sync backend stock in real-time every 5 seconds & on tab/window focus
+setInterval(() => {
+  if (window.cart && typeof window.cart.syncWithBackend === 'function') {
+    window.cart.syncWithBackend();
+  }
+}, 5000);
+
+window.addEventListener('focus', () => {
+  if (window.cart && typeof window.cart.syncWithBackend === 'function') {
+    window.cart.syncWithBackend();
+  }
+});
