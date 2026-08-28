@@ -591,6 +591,7 @@ async function loadRelatedProducts(slug, currentId) {
         <div class="product-info">
           <div class="product-brand">${prod.brand}</div>
           <a href="product.html?id=${prod.id}" class="product-title" title="${prod.name}">${prod.name}</a>
+          <div class="product-stock-display" data-id="${prod.id}" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px;"></div>
           <div class="product-price-wrapper" style="margin-bottom: 12px;">
             ${priceHtml}
           </div>

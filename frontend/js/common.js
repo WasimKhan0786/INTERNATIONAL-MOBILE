@@ -146,6 +146,31 @@ const cart = {
         }
       }
     });
+
+    // Update real-time inventory displays on all frontend product cards
+    const stockDisplays = document.querySelectorAll('.product-stock-display');
+    stockDisplays.forEach(el => {
+      const prodId = el.dataset.id;
+      if (!prodId) return;
+
+      const btn = document.querySelector(`.btn-add-to-cart[data-id="${prodId}"], .add-cart-btn[data-id="${prodId}"], #btn-detail-add-cart[data-id="${prodId}"], #quickview-add-cart[data-id="${prodId}"]`);
+      if (!btn) return;
+
+      const dbStock = parseInt(btn.dataset.stock);
+      if (isNaN(dbStock)) return;
+
+      const cartItem = cartItems.find(item => item.id === prodId);
+      const cartQty = cartItem ? cartItem.quantity : 0;
+      const remaining = Math.max(0, dbStock - cartQty);
+
+      if (remaining <= 0) {
+        el.innerHTML = `<span style="color: var(--danger);"><i class="fa-solid fa-circle-xmark"></i> Out of Stock</span>`;
+      } else if (remaining < 10) {
+        el.innerHTML = `<span style="color: var(--primary-color);"><i class="fa-solid fa-circle-exclamation"></i> Only ${remaining} left!</span>`;
+      } else {
+        el.innerHTML = `<span style="color: var(--success);"><i class="fa-solid fa-circle-check"></i> Stock: ${remaining} left</span>`;
+      }
+    });
   },
 
   async syncWithBackend() {
@@ -1058,6 +1083,8 @@ window.openQuickViewModal = async function(productId) {
               </span>
               <span style="font-size: 0.8rem; color: var(--text-muted);">(${product.reviewsCount || 10} Reviews)</span>
             </div>
+
+            <div class="product-stock-display" data-id="${product.id}" style="font-size: 0.85rem; font-weight: 600; margin-bottom: 12px;"></div>
 
             <!-- Price -->
             <div style="margin-bottom: 15px; display: flex; align-items: center;">

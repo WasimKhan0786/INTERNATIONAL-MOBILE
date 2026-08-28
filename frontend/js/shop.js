@@ -393,6 +393,7 @@ function renderNextBatch() {
           <span class="stars-rating">${starsHtml}</span>
           <span class="rating-count">(${prod.reviewsCount || 10})</span>
         </div>
+        <div class="product-stock-display" data-id="${prod.id}" style="font-size: 0.8rem; font-weight: 600; margin-bottom: 6px;"></div>
         <div class="product-price-wrapper">
           ${priceHtml}
         </div>
