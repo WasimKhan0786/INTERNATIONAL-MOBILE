@@ -8,7 +8,7 @@ router.post('/', orderController.createOrder);
 
 // Guarded admin order review list and details manager
 router.get('/', protect, orderController.getAllOrders);
-router.get('/:id', protect, orderController.getOrderById);
+router.get('/:id', orderController.getOrderById);
 router.put('/:id/status', protect, orderController.updateOrderStatus);
 router.put('/:id', protect, orderController.updateOrderDetails);
 router.delete('/:id', protect, orderController.deleteOrder);
