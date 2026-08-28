@@ -199,10 +199,40 @@ function renderBestsellersList(products) {
     item.innerHTML = `
       <div style="flex-grow: 1; min-width: 0; padding-right: 10px;">
         <span style="font-weight: 600; font-size: 0.85rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${prod.name}</span>
-        <span style="font-size: 0.75rem; color: var(--text-muted);">Rating: ${prod.rating || 4.5} ★ | ${prod.brand}</span>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Rating: ${prod.rating || 4.5} ★ | ${prod.brand || 'Accessories'}</span>
       </div>
-      <span style="font-weight: 700; font-size: 0.85rem; color: var(--primary-color);">₹${prod.discountPrice || prod.price}</span>
+      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+        <span style="font-weight: 700; font-size: 0.85rem; color: var(--primary-color);">₹${prod.discountPrice || prod.price}</span>
+        <button class="btn btn-outline btn-sm btn-delete-bestseller" title="Remove from Best Sellers" style="padding: 4px 8px; border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.05); color: var(--danger); font-size: 0.75rem; border-radius: 4px; cursor: pointer;">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
     `;
+
+    // Click handler for delete/remove from Bestsellers
+    const deleteBtn = item.querySelector('.btn-delete-bestseller');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const prodId = prod._id || prod.id;
+        window.showConfirmModal(
+          "Remove Bestseller",
+          `Are you sure you want to remove "${prod.name}" from the Best Sellers list?`,
+          async () => {
+            try {
+              await window.api.products.update(prodId, { bestseller: false });
+              window.showToast(`"${prod.name}" removed from Best Sellers!`, "success");
+              // Re-fetch products and re-render dashboard
+              loadDashboardData();
+            } catch (err) {
+              console.error(err);
+              window.showToast("Failed to remove bestseller.", "error");
+            }
+          }
+        );
+      });
+    }
+
     container.appendChild(item);
   });
 }
