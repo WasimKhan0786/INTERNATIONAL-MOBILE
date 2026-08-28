@@ -108,6 +108,8 @@ async function loadProductDetails(id) {
       }
     }
 
+    window.loadedProduct = product;
+
     // 4. Stock status
     const stockStatusEl = document.getElementById('detail-stock-status');
     const addCartBtn = document.getElementById('btn-detail-add-cart');
@@ -122,20 +124,7 @@ async function loadProductDetails(id) {
       buyNowBtn.dataset.stock = product.stock;
     }
 
-    if (product.stock <= 0) {
-      stockStatusEl.innerHTML = `<span class="stock-status stock-outofstock"><i class="fa-solid fa-circle-xmark"></i> Out of Stock</span>`;
-      addCartBtn.disabled = true;
-      buyNowBtn.disabled = true;
-      addCartBtn.textContent = 'Out of Stock';
-    } else if (product.stock < 10) {
-      stockStatusEl.innerHTML = `<span class="stock-status stock-low"><i class="fa-solid fa-circle-exclamation"></i> Low Stock! Only ${product.stock} left</span>`;
-      addCartBtn.disabled = false;
-      buyNowBtn.disabled = false;
-    } else {
-      stockStatusEl.innerHTML = `<span class="stock-status stock-instock"><i class="fa-solid fa-circle-check"></i> In Stock</span>`;
-      addCartBtn.disabled = false;
-      buyNowBtn.disabled = false;
-    }
+    updateProductDetailStockDisplay();
 
     // 5. Image gallery
     const mainImg = document.getElementById('gallery-main-image');
@@ -644,3 +633,53 @@ function formatSlugName(slug) {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+// Update the main product detail page's stock quantity and badge in real-time
+function updateProductDetailStockDisplay() {
+  const product = window.loadedProduct;
+  if (!product) return;
+
+  const stockStatusEl = document.getElementById('detail-stock-status');
+  const addCartBtn = document.getElementById('btn-detail-add-cart');
+  const buyNowBtn = document.getElementById('btn-detail-buy-now');
+  if (!stockStatusEl || !addCartBtn) return;
+
+  const cartItems = window.cart.get();
+  const cartItem = cartItems.find(item => item.id === product.id);
+  const cartQty = cartItem ? cartItem.quantity : 0;
+  const remainingStock = Math.max(0, product.stock - cartQty);
+
+  if (remainingStock <= 0) {
+    stockStatusEl.innerHTML = `<span class="stock-status stock-outofstock"><i class="fa-solid fa-circle-xmark"></i> Out of Stock</span>`;
+    addCartBtn.disabled = true;
+    if (buyNowBtn) buyNowBtn.disabled = true;
+    addCartBtn.innerHTML = '<i class="fa-solid fa-circle-xmark"></i> Out of Stock';
+    addCartBtn.style.backgroundColor = 'var(--text-muted)';
+    addCartBtn.style.borderColor = 'var(--text-muted)';
+    addCartBtn.style.cursor = 'not-allowed';
+    if (buyNowBtn) buyNowBtn.style.display = 'none';
+  } else if (remainingStock < 10) {
+    stockStatusEl.innerHTML = `<span class="stock-status stock-low"><i class="fa-solid fa-circle-exclamation"></i> Low Stock! Only ${remainingStock} left</span>`;
+    addCartBtn.disabled = false;
+    if (buyNowBtn) buyNowBtn.disabled = false;
+    addCartBtn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
+    addCartBtn.style.backgroundColor = '';
+    addCartBtn.style.borderColor = '';
+    addCartBtn.style.cursor = '';
+    if (buyNowBtn) buyNowBtn.style.display = '';
+  } else {
+    stockStatusEl.innerHTML = `<span class="stock-status stock-instock"><i class="fa-solid fa-circle-check"></i> In Stock (${remainingStock} units left)</span>`;
+    addCartBtn.disabled = false;
+    if (buyNowBtn) buyNowBtn.disabled = false;
+    addCartBtn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
+    addCartBtn.style.backgroundColor = '';
+    addCartBtn.style.borderColor = '';
+    addCartBtn.style.cursor = '';
+    if (buyNowBtn) buyNowBtn.style.display = '';
+  }
+}
+
+// React to cart modifications in real-time
+window.addEventListener('cartUpdated', () => {
+  updateProductDetailStockDisplay();
+});
