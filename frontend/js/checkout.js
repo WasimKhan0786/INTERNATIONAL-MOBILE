@@ -116,7 +116,7 @@ async function handlePlaceOrder(e) {
 
   } catch (err) {
     console.error(err);
-    window.showToast("Failed to place order. Please try again.", "error");
+    window.showToast(err.message || "Failed to place order. Please try again.", "error");
     
     const submitBtn = e.target.querySelector('button[type="submit"]');
     if (submitBtn) {

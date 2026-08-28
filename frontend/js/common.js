@@ -15,7 +15,8 @@ const cart = {
 
   add(product, quantity = 1) {
     const items = this.get();
-    const existingIndex = items.findIndex(item => item.id === product.id);
+    const prodId = (product.id || product._id || '').toString();
+    const existingIndex = items.findIndex(item => item.id === prodId);
     
     if (product.stock <= 0) {
       window.showToast("Product is out of stock!", "error");
@@ -35,13 +36,13 @@ const cart = {
         return false;
       }
       items.push({
-        id: product.id,
+        id: prodId,
         name: product.name,
-        brand: product.brand,
+        brand: product.brand || '',
         price: product.discountPrice || product.price,
-        image: product.images[0] ? (product.images[0].url || product.images[0]) : '',
+        image: product.images && product.images[0] ? (product.images[0].url || product.images[0]) : '',
         quantity: quantity,
-        sku: product.sku
+        sku: product.sku || ''
       });
     }
     
