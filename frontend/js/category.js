@@ -177,10 +177,10 @@ async function loadCategoryProducts() {
             ${priceHtml}
           </div>
           <div class="product-card-actions">
-            <button class="add-cart-btn btn-add-to-cart" data-id="${prod.id}" ${prod.stock <= 0 ? 'disabled style="background-color: var(--text-muted); cursor: not-allowed; width: 100%; flex: 1;"' : ''}>
+            <button class="add-cart-btn btn-add-to-cart" data-id="${prod.id}" data-stock="${prod.stock}" ${prod.stock <= 0 ? 'disabled style="background-color: var(--text-muted); cursor: not-allowed; width: 100%; flex: 1;"' : ''}>
               ${prod.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
-            <button class="buy-now-btn btn-buy-now" data-id="${prod.id}" ${prod.stock <= 0 ? 'disabled style="display: none;"' : ''}>
+            <button class="buy-now-btn btn-buy-now" data-id="${prod.id}" data-stock="${prod.stock}" ${prod.stock <= 0 ? 'disabled style="display: none;"' : ''}>
               Buy Now
             </button>
           </div>
@@ -208,6 +208,8 @@ async function loadCategoryProducts() {
 
       grid.appendChild(card);
     });
+
+    window.cart.updateDOMButtons();
 
   } catch (err) {
     console.error("Failed to load category products", err);

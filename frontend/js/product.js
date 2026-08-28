@@ -113,6 +113,15 @@ async function loadProductDetails(id) {
     const addCartBtn = document.getElementById('btn-detail-add-cart');
     const buyNowBtn = document.getElementById('btn-detail-buy-now');
 
+    if (addCartBtn) {
+      addCartBtn.dataset.id = product.id;
+      addCartBtn.dataset.stock = product.stock;
+    }
+    if (buyNowBtn) {
+      buyNowBtn.dataset.id = product.id;
+      buyNowBtn.dataset.stock = product.stock;
+    }
+
     if (product.stock <= 0) {
       stockStatusEl.innerHTML = `<span class="stock-status stock-outofstock"><i class="fa-solid fa-circle-xmark"></i> Out of Stock</span>`;
       addCartBtn.disabled = true;
@@ -196,6 +205,8 @@ async function loadProductDetails(id) {
 
     // 10. Load Related Products
     await loadRelatedProducts(product.categorySlug, product.id);
+
+    window.cart.updateDOMButtons();
 
     // Hide loader, show page
     if (loader) loader.style.display = 'none';
@@ -595,10 +606,10 @@ async function loadRelatedProducts(slug, currentId) {
             ${priceHtml}
           </div>
           <div class="product-card-actions">
-            <button class="add-cart-btn btn-add-to-cart" style="padding: 8px 4px; font-size:0.75rem; ${prod.stock <= 0 ? 'background-color: var(--text-muted); cursor: not-allowed; width: 100%; flex: 1;' : ''}" data-id="${prod.id}" ${prod.stock <= 0 ? 'disabled' : ''}>
+            <button class="add-cart-btn btn-add-to-cart" style="padding: 8px 4px; font-size:0.75rem; ${prod.stock <= 0 ? 'background-color: var(--text-muted); cursor: not-allowed; width: 100%; flex: 1;' : ''}" data-id="${prod.id}" data-stock="${prod.stock}" ${prod.stock <= 0 ? 'disabled' : ''}>
               ${prod.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
-            <button class="buy-now-btn btn-buy-now" style="padding: 8px 4px; font-size:0.75rem; ${prod.stock <= 0 ? 'display: none;' : ''}" data-id="${prod.id}" ${prod.stock <= 0 ? 'disabled' : ''}>
+            <button class="buy-now-btn btn-buy-now" style="padding: 8px 4px; font-size:0.75rem; ${prod.stock <= 0 ? 'display: none;' : ''}" data-id="${prod.id}" data-stock="${prod.stock}" ${prod.stock <= 0 ? 'disabled' : ''}>
               Buy Now
             </button>
           </div>

@@ -9,6 +9,7 @@ const cart = {
   save(items) {
     localStorage.setItem('tz_cart', JSON.stringify(items));
     this.updateBadge();
+    this.updateDOMButtons();
     // Dispatch custom event to let other scripts know cart updated
     window.dispatchEvent(new CustomEvent('cartUpdated'));
   },
@@ -91,6 +92,59 @@ const cart = {
     badges.forEach(badge => {
       badge.textContent = count;
       badge.style.display = count > 0 ? 'flex' : 'none';
+    });
+  },
+
+  updateDOMButtons() {
+    const cartItems = this.get();
+    const buttons = document.querySelectorAll('.btn-add-to-cart, .add-cart-btn, #btn-detail-add-cart, #quickview-add-cart');
+    
+    buttons.forEach(btn => {
+      const prodId = btn.dataset.id;
+      if (!prodId) return;
+
+      const dbStock = parseInt(btn.dataset.stock);
+      if (isNaN(dbStock)) return;
+
+      const cartItem = cartItems.find(item => item.id === prodId);
+      const cartQty = cartItem ? cartItem.quantity : 0;
+      const remaining = dbStock - cartQty;
+
+      // Find sibling Buy Now button if it exists
+      let buyNowBtn = null;
+      if (btn.id === 'btn-detail-add-cart') {
+        buyNowBtn = document.getElementById('btn-detail-buy-now');
+      } else if (btn.id === 'quickview-add-cart') {
+        buyNowBtn = document.getElementById('quickview-buy-now');
+      } else if (btn.parentElement) {
+        buyNowBtn = btn.parentElement.querySelector('.btn-buy-now, .buy-now-btn');
+      }
+
+      if (dbStock <= 0 || remaining <= 0) {
+        btn.disabled = true;
+        btn.textContent = 'Out of Stock';
+        btn.style.backgroundColor = 'var(--text-muted)';
+        btn.style.borderColor = 'var(--text-muted)';
+        btn.style.cursor = 'not-allowed';
+        if (buyNowBtn) {
+          buyNowBtn.disabled = true;
+          buyNowBtn.style.display = 'none';
+        }
+      } else {
+        btn.disabled = false;
+        if (btn.id === 'btn-detail-add-cart') {
+          btn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> Add to Cart';
+        } else {
+          btn.textContent = 'Add to Cart';
+        }
+        btn.style.backgroundColor = '';
+        btn.style.borderColor = '';
+        btn.style.cursor = '';
+        if (buyNowBtn) {
+          buyNowBtn.disabled = false;
+          buyNowBtn.style.display = '';
+        }
+      }
     });
   }
 };
@@ -207,6 +261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Update initial cart badge count
   cart.updateBadge();
+  cart.updateDOMButtons();
   
   // Initialize Search Bars
   initSearchEvent();
@@ -987,10 +1042,10 @@ window.openQuickViewModal = async function(productId) {
           <!-- Actions -->
           <div style="border-top: 1px solid var(--border-color); padding-top: 15px; margin-top: 15px;">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-              <button id="quickview-add-cart" class="btn btn-outline" style="width: 100%; ${product.stock <= 0 ? 'background-color: var(--text-muted); cursor: not-allowed; opacity: 0.6;' : ''}" ${product.stock <= 0 ? 'disabled' : ''}>
+              <button id="quickview-add-cart" class="btn btn-outline" data-id="${product.id}" data-stock="${product.stock}" style="width: 100%; ${product.stock <= 0 ? 'background-color: var(--text-muted); cursor: not-allowed; opacity: 0.6;' : ''}" ${product.stock <= 0 ? 'disabled' : ''}>
                 ${product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
               </button>
-              <button id="quickview-buy-now" class="btn btn-primary" style="width: 100%; ${product.stock <= 0 ? 'display:none;' : ''}" ${product.stock <= 0 ? 'disabled' : ''}>
+              <button id="quickview-buy-now" class="btn btn-primary" data-id="${product.id}" data-stock="${product.stock}" style="width: 100%; ${product.stock <= 0 ? 'display:none;' : ''}" ${product.stock <= 0 ? 'disabled' : ''}>
                 Buy Now
               </button>
             </div>
@@ -1001,6 +1056,7 @@ window.openQuickViewModal = async function(productId) {
     `;
 
     document.body.appendChild(modal);
+    window.cart.updateDOMButtons();
 
     const closeModal = () => modal.remove();
     modal.querySelector('#quickview-close').addEventListener('click', closeModal);
