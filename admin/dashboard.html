@@ -137,6 +137,62 @@
       </div>
 
     </main>
+  <!-- Model Sales Breakdown Modal -->
+  <div class="modal-overlay" id="dashboard-model-modal" style="z-index: 1600;">
+    <div class="modal-content" style="max-width: 720px; width: 92%; max-height: 90vh; display: flex; flex-direction: column; padding: 24px; border-radius: 12px; box-shadow: var(--shadow-lg);">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-admin); padding-bottom: 15px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(255, 87, 34, 0.1); color: var(--primary-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; color: var(--secondary-color);" id="model-modal-title">Phone Model Details</h3>
+            <span style="font-size: 0.78rem; color: var(--text-muted);" id="model-modal-subtitle">Sales & order breakdown</span>
+          </div>
+        </div>
+        <button id="dashboard-model-modal-close" style="background: none; border: none; font-size: 1.4rem; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 4px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <!-- Stat Badges Cards Grid -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;">
+        <div style="background: #f9fafb; border: 1px solid var(--border-admin); border-radius: 8px; padding: 12px; text-align: center;">
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Units Sold</span>
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--primary-color); margin-top: 4px;" id="model-modal-stat-units">0</div>
+        </div>
+        <div style="background: #f9fafb; border: 1px solid var(--border-admin); border-radius: 8px; padding: 12px; text-align: center;">
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Total Revenue</span>
+          <div style="font-size: 1.3rem; font-weight: 800; color: #10b981; margin-top: 4px;" id="model-modal-stat-revenue">₹0</div>
+        </div>
+        <div style="background: #f9fafb; border: 1px solid var(--border-admin); border-radius: 8px; padding: 12px; text-align: center;">
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Total Orders</span>
+          <div style="font-size: 1.3rem; font-weight: 800; color: var(--secondary-color);" id="model-modal-stat-orders">0</div>
+        </div>
+      </div>
+
+      <!-- Orders Breakdown Table -->
+      <h4 style="font-size: 0.9rem; font-weight: 700; margin-bottom: 10px; color: var(--secondary-color);"><i class="fa-solid fa-receipt" style="color: var(--primary-color);"></i> Associated Orders & Items</h4>
+      <div style="overflow-y: auto; max-height: 320px; border: 1px solid var(--border-admin); border-radius: 8px;">
+        <table class="admin-table" style="width: 100%; margin-bottom: 0;">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Product / Accessory</th>
+              <th>Qty</th>
+              <th>Subtotal</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="model-modal-tbody">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <div style="margin-top: 20px; text-align: right;">
+        <button class="btn btn-outline btn-sm" id="dashboard-model-modal-done-btn">Close Details</button>
+      </div>
+    </div>
   </div>
 
   <!-- Scripts -->

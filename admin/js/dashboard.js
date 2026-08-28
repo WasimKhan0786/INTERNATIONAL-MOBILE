@@ -241,19 +241,128 @@ function renderPhoneModelsChart(orders) {
     
     const row = document.createElement('div');
     row.className = 'model-chart-row';
+    row.title = `Click to view detailed sales breakdown for ${m.name}`;
     row.innerHTML = `
       <div class="model-name" title="${m.name}">${m.name}</div>
       <div class="model-bar-wrapper">
         <div class="model-bar-progress" style="width: ${pct}%"></div>
       </div>
       <div class="model-count">${m.sales} Sold</div>
+      <i class="fa-solid fa-chevron-right model-action-icon"></i>
     `;
+
+    row.addEventListener('click', () => {
+      openModelDetailsModal(m.name, orders);
+    });
+
     container.appendChild(row);
+  });
+
+  setupModelModalEvents();
+}
+
+function openModelDetailsModal(modelName, orders) {
+  const modal = document.getElementById('dashboard-model-modal');
+  if (!modal) return;
+
+  const matchedItems = [];
+  let totalUnits = 0;
+  let totalRevenue = 0;
+  const orderIdsSet = new Set();
+
+  orders.forEach(order => {
+    if (order.status === 'Cancelled') return;
+
+    const orderDateStr = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-IN') : 'N/A';
+    const orderIdDisplay = order.id || (order._id ? `#${order._id.substring(order._id.length - 6).toUpperCase()}` : 'ORD');
+
+    (order.products || []).forEach(item => {
+      const itemModel = extractPhoneModel(item.name || '');
+      if (itemModel === modelName) {
+        const qty = item.quantity || 1;
+        const price = item.price || 0;
+        const subtotal = price * qty;
+
+        totalUnits += qty;
+        totalRevenue += subtotal;
+        orderIdsSet.add(order._id || order.id);
+
+        matchedItems.push({
+          orderId: orderIdDisplay,
+          customerName: order.customerName || order.name || 'Customer',
+          productName: item.name || 'Product Item',
+          quantity: qty,
+          subtotal: subtotal,
+          status: order.status || 'Pending',
+          date: orderDateStr
+        });
+      }
+    });
+  });
+
+  document.getElementById('model-modal-title').textContent = modelName;
+  document.getElementById('model-modal-subtitle').textContent = `Sales analytics & associated order details for ${modelName}`;
+  document.getElementById('model-modal-stat-units').textContent = `${totalUnits} Units`;
+  document.getElementById('model-modal-stat-revenue').textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+  document.getElementById('model-modal-stat-orders').textContent = `${orderIdsSet.size} Orders`;
+
+  const tbody = document.getElementById('model-modal-tbody');
+  tbody.innerHTML = '';
+
+  if (matchedItems.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">No active order items found for ${modelName}.</td></tr>`;
+  } else {
+    matchedItems.forEach(item => {
+      const tr = document.createElement('tr');
+
+      let statusBadgeClass = 'badge-pending';
+      if (item.status === 'Processing') statusBadgeClass = 'badge-processing';
+      if (item.status === 'Shipped') statusBadgeClass = 'badge-shipped';
+      if (item.status === 'Delivered' || item.status === 'Completed') statusBadgeClass = 'badge-completed';
+      if (item.status === 'Cancelled') statusBadgeClass = 'badge-cancelled';
+
+      tr.innerHTML = `
+        <td style="font-weight: 700; color: var(--primary-color);">${item.orderId}</td>
+        <td style="font-weight: 600;">${item.customerName}</td>
+        <td style="max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.productName}">${item.productName}</td>
+        <td style="font-weight: 700; text-align: center;">${item.quantity}</td>
+        <td style="font-weight: 700; color: #10b981;">₹${item.subtotal.toLocaleString('en-IN')}</td>
+        <td><span class="status-badge ${statusBadgeClass}">${item.status}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  modal.classList.add('show');
+}
+
+function setupModelModalEvents() {
+  const modal = document.getElementById('dashboard-model-modal');
+  const closeBtn = document.getElementById('dashboard-model-modal-close');
+  const doneBtn = document.getElementById('dashboard-model-modal-done-btn');
+
+  if (!modal) return;
+
+  const closeModal = () => {
+    modal.classList.remove('show');
+  };
+
+  if (closeBtn) closeBtn.onclick = closeModal;
+  if (doneBtn) doneBtn.onclick = closeModal;
+
+  modal.onclick = (e) => {
+    if (e.target === modal) closeModal();
+  };
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+      closeModal();
+    }
   });
 }
 
 function extractPhoneModel(productName) {
-  const name = productName.toLowerCase();
+  const name = (productName || '').toLowerCase();
   
   const iphoneMatch = productName.match(/iphone\s+\d+\s*(?:pro\s*max|pro|plus|mini)?/i);
   if (iphoneMatch) {
@@ -281,7 +390,8 @@ function extractPhoneModel(productName) {
   if (name.includes('samsung') || name.includes('galaxy')) return 'Samsung (General)';
   if (name.includes('oneplus')) return 'OnePlus (General)';
   if (name.includes('pixel')) return 'Google Pixel (General)';
-  if (name.includes('charger') || name.includes('adapter')) return 'Chargers / Power';
+  if (name.includes('charger') || name.includes('adapter') || name.includes('power')) return 'Chargers / Power';
   
   return 'Other Accessories';
 }
+
