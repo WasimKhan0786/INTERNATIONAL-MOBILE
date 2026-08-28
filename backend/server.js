@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
+const { connectDB, ensureDbConnected } = require('./config/db');
 
 // Load env configurations
 dotenv.config();
@@ -22,6 +23,9 @@ app.use(express.static(path.join(__dirname, '../')));
 app.get('/', (req, res) => {
   res.redirect('/frontend/index.html');
 });
+
+// Ensure DB is connected before processing any /api request
+app.use('/api', ensureDbConnected);
 
 // Mount Router Endpoints
 app.use('/api/auth', require('./routes/auth'));
@@ -43,21 +47,15 @@ app.use((err, req, res, next) => {
 
 // MongoDB Connection & Startup
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-  console.warn('WARNING: MONGODB_URI is not defined in env configuration.');
-} else {
-  mongoose.connect(MONGODB_URI)
-    .then(async () => {
-      console.log('Connected to MongoDB Database.');
-      // Auto-seed initial admin and settings if database is empty
-      await autoSeedIfNeeded();
-    })
-    .catch(err => {
-      console.error('Database connection failed:', err);
-    });
-}
+connectDB()
+  .then(async () => {
+    console.log('Connected to MongoDB Database successfully.');
+    await autoSeedIfNeeded();
+  })
+  .catch(err => {
+    console.error('Database connection startup failed:', err.message);
+  });
 
 // Only run app.listen locally (not on Vercel serverless environment)
 if (!process.env.VERCEL) {
@@ -70,30 +68,69 @@ if (!process.env.VERCEL) {
 
 module.exports = app;
 
-// Safe Seeding on first launch
+// Safe Seeding on launch
 async function autoSeedIfNeeded() {
   try {
     const User = require('./models/User');
     const Settings = require('./models/Settings');
 
-    // Automatically check and update old admin@techzone.com credentials if they exist
-    const oldAdmin = await User.findOne({ email: 'admin@techzone.com' });
-    if (oldAdmin) {
-      console.log('Found old default admin user. Updating to wasimkham7861@gmail.com...');
-      oldAdmin.email = 'wasimkham7861@gmail.com';
-      oldAdmin.password = 'wasim$$0786'; // Pre-save hooks will encrypt
-      await oldAdmin.save();
-      console.log('Admin user credentials updated successfully.');
+    const targetAdminEmail = (process.env.ADMIN_EMAIL || 'wasimkham7861@gmail.com').toLowerCase().trim();
+    const targetAdminPassword = process.env.ADMIN_PASSWORD || 'wasim$$0786';
+
+    // 1. Sync or create primary Admin account
+    let adminUser = await User.findOne({ email: targetAdminEmail });
+
+    if (!adminUser) {
+      // Check if there is an old admin or any admin
+      adminUser = await User.findOne({ email: 'admin@techzone.com' }) || await User.findOne({ role: 'admin' });
+    }
+
+    if (adminUser) {
+      let isUpdated = false;
+      if (adminUser.email !== targetAdminEmail) {
+        console.log(`Updating admin email from ${adminUser.email} to ${targetAdminEmail}...`);
+        adminUser.email = targetAdminEmail;
+        isUpdated = true;
+      }
+
+      let passwordValid = false;
+      try {
+        passwordValid = await adminUser.comparePassword(targetAdminPassword);
+      } catch (e) {
+        passwordValid = false;
+      }
+
+      if (!passwordValid) {
+        console.log(`Syncing admin password for ${targetAdminEmail}...`);
+        adminUser.password = targetAdminPassword; // Model pre-save hook hashes password
+        isUpdated = true;
+      }
+
+      if (isUpdated) {
+        await adminUser.save();
+        console.log('Admin user account synced successfully.');
+      }
+    } else {
+      console.log(`No admin user found. Creating primary administrator: ${targetAdminEmail}...`);
+      const newAdmin = new User({
+        name: 'Administrator',
+        email: targetAdminEmail,
+        password: targetAdminPassword,
+        role: 'admin'
+      });
+      await newAdmin.save();
+      console.log(`Seeded admin user: ${targetAdminEmail}`);
     }
 
     let settings = await Settings.findOne();
     if (settings && (settings.adminEmail === 'admin@techzone.com' || settings.adminPassword === 'admin123')) {
       console.log('Found old credentials in settings. Updating configuration...');
-      settings.adminEmail = 'wasimkham7861@gmail.com';
-      settings.adminPassword = 'wasim$$0786';
+      settings.adminEmail = targetAdminEmail;
+      settings.adminPassword = targetAdminPassword;
       await settings.save();
       console.log('Settings configuration updated successfully.');
     }
+
 
     // Normal seeding if no admin exists at all
     const adminCount = await User.countDocuments({ role: 'admin' });

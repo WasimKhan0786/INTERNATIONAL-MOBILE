@@ -1,6 +1,6 @@
 // TechZone Mobile Accessories - Real Backend REST API Client
 
-const BASE_URL = '/api';
+const BASE_URL = (typeof window !== 'undefined' && window.API_BASE_URL) ? window.API_BASE_URL : '/api';
 const TOKEN_KEY = 'tz_token';
 
 // Helper to get JWT token from localStorage
@@ -14,18 +14,29 @@ const api = {
   // Authentication services
   auth: {
     login: async (email, password) => {
-      const res = await fetch(`${BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || 'Login failed.');
+      try {
+        const res = await fetch(`${BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data.message || `Authentication failed (${res.status}).`);
+        }
+        if (!data.token) {
+          throw new Error('Authentication response did not return a valid token.');
+        }
+        localStorage.setItem(TOKEN_KEY, data.token);
+        return data.admin;
+      } catch (err) {
+        if (err.name === 'TypeError' && (err.message.includes('fetch') || err.message.includes('Failed to fetch'))) {
+          throw new Error('Unable to connect to backend server. Please verify network connection or server status.');
+        }
+        throw err;
       }
-      localStorage.setItem(TOKEN_KEY, data.token);
-      return data.admin;
     },
+
 
     me: async () => {
       const token = localStorage.getItem(TOKEN_KEY);

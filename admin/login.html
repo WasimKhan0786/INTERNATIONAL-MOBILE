@@ -58,7 +58,7 @@
     <form id="admin-login-form" style="display: flex; flex-direction: column; gap: 20px;">
       <div class="form-group">
         <label for="login-email">Email Address</label>
-        <input type="email" id="login-email" required placeholder="admin@techzone.com">
+        <input type="email" id="login-email" required placeholder="wasimkham7861@gmail.com">
       </div>
       <div class="form-group">
         <label for="login-password">Password</label>
@@ -67,9 +67,10 @@
       <button type="submit" class="btn btn-primary btn-block" style="margin-top: 10px;">Log In to Control Panel</button>
     </form>
     
-    <div style="margin-top: 25px; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 15px;">
-      Default Credentials:<br>
-
+    <div style="margin-top: 25px; text-align: center; font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 15px;">
+      <strong>Default Credentials:</strong><br>
+      Email: <code style="color: var(--primary-color);">wasimkham7861@gmail.com</code><br>
+      Password: <code style="color: var(--primary-color);">wasim$$0786</code>
     </div>
   </div>
 
@@ -85,6 +86,9 @@
         container.id = 'toast-container';
         document.body.appendChild(container);
       }
+      // Deduplicate toasts: clear previous toast elements before inserting new toast
+      container.innerHTML = '';
+
       const toast = document.createElement('div');
       toast.className = `toast toast-${type}`;
       let icon = '<i class="fa-solid fa-circle-check"></i>';
@@ -98,19 +102,38 @@
       }, 3000);
     };
 
-    document.getElementById('admin-login-form').addEventListener('submit', async (e) => {
+    const loginForm = document.getElementById('admin-login-form');
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    let isSubmitting = false;
+
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (isSubmitting) return;
+
       const email = document.getElementById('login-email').value.trim();
       const pass = document.getElementById('login-password').value;
+
+      if (!email || !pass) {
+        window.showToast("Please enter email and password.", "error");
+        return;
+      }
+
+      isSubmitting = true;
+      submitBtn.disabled = true;
+      const originalBtnText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
 
       try {
         const result = await window.api.auth.login(email, pass);
         window.showToast("Login Successful! Redirecting...", "success");
         setTimeout(() => {
           window.location.href = 'dashboard.html';
-        }, 1000);
+        }, 800);
       } catch (err) {
-        window.showToast(err.message, "error");
+        window.showToast(err.message || "Authentication error", "error");
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
       }
     });
 

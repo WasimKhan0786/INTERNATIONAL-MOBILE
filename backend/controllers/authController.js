@@ -10,30 +10,42 @@ const signToken = (id) => {
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
 
-    if (!email || !password) {
+    if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email and password'
+        message: 'Please provide a valid email and password'
       });
     }
 
-    // Find admin by email
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const cleanEmail = email.trim().toLowerCase();
+
+    // Find admin user by email
+    const user = await User.findOne({ email: cleanEmail });
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials. User not found.'
+        message: 'Invalid email or password'
       });
     }
 
-    // Verify Password
-    const isMatch = await user.comparePassword(password);
+    // Verify Password safely
+    let isMatch = false;
+    try {
+      isMatch = await user.comparePassword(password);
+    } catch (bcryptErr) {
+      console.error('Password comparison failed for user:', cleanEmail, bcryptErr);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
+      });
+    }
+
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials. Password incorrect.'
+        message: 'Invalid email or password'
       });
     }
 
@@ -52,10 +64,10 @@ exports.login = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('Authentication login error:', err);
     return res.status(500).json({
       success: false,
-      message: 'Server error during authentication login'
+      message: err.message || 'Server error during authentication login'
     });
   }
 };
@@ -68,7 +80,7 @@ exports.getMe = async (req, res) => {
       admin: req.admin
     });
   } catch (err) {
-    console.error(err);
+    console.error('Get profile session error:', err);
     return res.status(500).json({
       success: false,
       message: 'Server error loading profile session'
@@ -83,3 +95,4 @@ exports.logout = async (req, res) => {
     message: 'Logged out successfully'
   });
 };
+
