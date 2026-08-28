@@ -1,10 +1,13 @@
 // TechZone Mobile Accessories - Cart Page Controller
 
+window.isUpdatingCartLocally = false;
+
 document.addEventListener('DOMContentLoaded', () => {
   renderCart();
 
   // Listen to cart update event dispatched by common.js
   window.addEventListener('cartUpdated', () => {
+    if (window.isUpdatingCartLocally) return;
     renderCart();
   });
 
@@ -66,17 +69,36 @@ async function renderCart() {
           <button class="qty-btn btn-cart-plus" data-id="${item.id}" data-qty="${item.quantity}"><i class="fa-solid fa-plus"></i></button>
         </div>
         <!-- Item Total -->
-        <div style="font-weight: 700; min-width: 70px; text-align: right;">₹${item.price * item.quantity}</div>
+        <div class="cart-item-total-val" style="font-weight: 700; min-width: 70px; text-align: right;">₹${item.price * item.quantity}</div>
         <!-- Trash button -->
         <button class="cart-item-delete btn-cart-delete" data-id="${item.id}" title="Remove Item"><i class="fa-regular fa-trash-can"></i></button>
       </div>
     `;
 
+    // Helper to update specific row values dynamically without destroying DOM focus
+    const updateRowValues = (newQty) => {
+      const btnMinus = row.querySelector('.btn-cart-minus');
+      const btnPlus = row.querySelector('.btn-cart-plus');
+      const inputEl = row.querySelector('.cart-qty-input');
+      const totalValEl = row.querySelector('.cart-item-total-val');
+
+      if (btnMinus) btnMinus.dataset.qty = newQty;
+      if (btnPlus) btnPlus.dataset.qty = newQty;
+      if (inputEl && parseInt(inputEl.value) !== newQty) inputEl.value = newQty;
+      if (totalValEl) totalValEl.textContent = `₹${item.price * newQty}`;
+
+      renderSummary();
+    };
+
     // Bind qty changes
     row.querySelector('.btn-cart-minus').addEventListener('click', (e) => {
       const id = e.currentTarget.dataset.id;
       const q = parseInt(e.currentTarget.dataset.qty);
+      if (q - 1 < 1) return;
+      window.isUpdatingCartLocally = true;
       window.cart.update(id, q - 1);
+      window.isUpdatingCartLocally = false;
+      updateRowValues(q - 1);
     });
 
     row.querySelector('.btn-cart-plus').addEventListener('click', async (e) => {
@@ -89,7 +111,10 @@ async function renderCart() {
         if (q + 1 > prod.stock) {
           window.showToast(`Only ${prod.stock} units of this accessory are available in stock.`, "error");
         } else {
+          window.isUpdatingCartLocally = true;
           window.cart.update(id, q + 1);
+          window.isUpdatingCartLocally = false;
+          updateRowValues(q + 1);
         }
       } catch (err) {
         console.error(err);
@@ -104,7 +129,10 @@ async function renderCart() {
       if (isNaN(val)) return; // Allow typing
       if (val < 1) {
         e.target.value = 1;
+        window.isUpdatingCartLocally = true;
         window.cart.update(item.id, 1);
+        window.isUpdatingCartLocally = false;
+        updateRowValues(1);
         return;
       }
       try {
@@ -112,9 +140,15 @@ async function renderCart() {
         if (val > prod.stock) {
           window.showToast(`Only ${prod.stock} units of this accessory are available in stock.`, "error");
           e.target.value = prod.stock;
+          window.isUpdatingCartLocally = true;
           window.cart.update(item.id, prod.stock);
+          window.isUpdatingCartLocally = false;
+          updateRowValues(prod.stock);
         } else {
+          window.isUpdatingCartLocally = true;
           window.cart.update(item.id, val);
+          window.isUpdatingCartLocally = false;
+          updateRowValues(val);
         }
       } catch (err) {
         console.error(err);
@@ -131,7 +165,10 @@ async function renderCart() {
           val = prod.stock;
         }
         e.target.value = val;
+        window.isUpdatingCartLocally = true;
         window.cart.update(item.id, val);
+        window.isUpdatingCartLocally = false;
+        updateRowValues(val);
       } catch (err) {
         console.error(err);
         e.target.value = item.quantity;
