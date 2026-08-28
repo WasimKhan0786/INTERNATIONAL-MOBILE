@@ -91,7 +91,7 @@ async function handlePlaceOrder(e) {
     const submitBtn = e.target.querySelector('button[type="submit"]');
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Processing Order...';
+      submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Order...';
     }
 
     // Call Mock API
@@ -113,7 +113,7 @@ async function handlePlaceOrder(e) {
     const submitBtn = e.target.querySelector('button[type="submit"]');
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Place Cash on Delivery Order';
+      submitBtn.innerHTML = '<i class="fa-brands fa-whatsapp" style="font-size: 1.4rem;"></i> Confirm & Order on WhatsApp';
     }
   }
 }
