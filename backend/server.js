@@ -11,8 +11,8 @@ const app = express();
 
 // Express Middlewares
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // Support larger base64 images uploads
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '50mb' })); // Support larger base64 image uploads
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Mount Static Files
 // Serve everything from the project root so both /frontend and /admin paths are accessible

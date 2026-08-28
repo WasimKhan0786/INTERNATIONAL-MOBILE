@@ -408,14 +408,46 @@ const api = {
     }
   },
 
-  // Image Upload helper (converts to base64 DataURI to upload on save)
-  uploadImage: async (file) => {
+  // Image Upload helper (resizes and compresses images to JPEG base64 DataURI to prevent payload overflow)
+  uploadImage: async (file, maxWidth = 1200, maxHeight = 650, quality = 0.75) => {
     return new Promise((resolve, reject) => {
-      if (file.size > 2 * 1024 * 1024) {
-        return reject(new Error('Image file is too large (maximum size 2MB)'));
+      if (!file || !file.type || !file.type.startsWith('image/')) {
+        return reject(new Error('Please select a valid image file.'));
       }
+      
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          // Scale down maintaining aspect ratio
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Compress to JPEG at specified quality
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(compressedDataUrl);
+        };
+
+        img.onerror = () => reject(new Error('Failed to parse image file.'));
+        img.src = e.target.result;
+      };
+
       reader.onerror = (err) => reject(err);
       reader.readAsDataURL(file);
     });
