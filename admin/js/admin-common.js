@@ -68,10 +68,14 @@ function injectAdminLayout(session, settings) {
     }
   }
 
-  // 2. Inject Top Header
+  // 2. Inject Top Header with Interactive Profile Customization Dropdown
   let headerEl = document.querySelector('.admin-header');
   if (headerEl) {
     const pageTitle = document.title.split('|')[0].trim() || 'Admin Panel';
+    const adminName = session.admin ? (session.admin.name || 'Administrator') : 'Admin';
+    const adminEmail = session.admin ? (session.admin.email || 'wasimkham7861@gmail.com') : '';
+    const initialLetter = (adminName.charAt(0) || 'A').toUpperCase();
+
     headerEl.innerHTML = `
       <div style="display: flex; align-items: center; gap: 12px;">
         <button class="admin-menu-trigger" id="admin-drawer-open" aria-label="Open navigation menu"><i class="fa-solid fa-bars"></i></button>
@@ -79,14 +83,131 @@ function injectAdminLayout(session, settings) {
       </div>
       <div class="admin-header-actions">
         <a href="../frontend/index.html" class="btn btn-outline btn-sm admin-view-site-btn" target="_blank" style="padding: 6px 12px; font-size: 0.8rem;"><i class="fa-solid fa-globe"></i> <span>View Site</span></a>
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="width: 36px; height: 36px; border-radius: 50%; background-color: var(--primary-color); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0;">
-            A
+        
+        <!-- Interactive Profile Dropdown Wrapper -->
+        <div class="admin-profile-dropdown-wrapper">
+          <div class="admin-profile-toggle" id="admin-profile-toggle" title="Admin Profile & Customization Menu">
+            <div class="admin-profile-avatar">
+              ${initialLetter}
+            </div>
+            <span class="admin-profile-name">${adminName}</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: var(--text-muted);"></i>
           </div>
-          <span class="admin-profile-name">Admin</span>
+
+          <!-- Dropdown Popup Menu -->
+          <div class="admin-profile-dropdown-menu" id="admin-profile-menu">
+            <!-- Header User Card -->
+            <div class="profile-menu-header">
+              <div class="admin-profile-avatar" style="width: 40px; height: 40px; font-size: 1.05rem;">
+                ${initialLetter}
+              </div>
+              <div style="flex-grow: 1; min-width: 0;">
+                <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${adminName}</div>
+                <div style="font-size: 0.73rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${adminEmail}</div>
+                <span class="admin-badge admin-badge-success" style="font-size: 0.65rem; padding: 2px 6px; margin-top: 3px; display: inline-block;">Super Admin</span>
+              </div>
+            </div>
+
+            <!-- Customization Section: Accent Colors -->
+            <div style="padding: 4px 10px; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Accent Theme Color</div>
+            <div class="theme-color-dots" style="margin-bottom: 6px;">
+              <div class="theme-color-dot" data-color="#ff5722" style="background: #ff5722;" title="Orange (Default)"></div>
+              <div class="theme-color-dot" data-color="#2563eb" style="background: #2563eb;" title="Royal Blue"></div>
+              <div class="theme-color-dot" data-color="#059669" style="background: #059669;" title="Emerald Green"></div>
+              <div class="theme-color-dot" data-color="#7c3aed" style="background: #7c3aed;" title="Deep Purple"></div>
+              <div class="theme-color-dot" data-color="#db2777" style="background: #db2777;" title="Hot Pink"></div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-admin, #f3f4f6); margin: 6px 0;"></div>
+
+            <!-- Quick Navigation & Customization Shortcuts -->
+            <a href="settings.html" class="profile-menu-item">
+              <i class="fa-solid fa-sliders" style="color: var(--primary-color);"></i>
+              <span>Store Settings</span>
+            </a>
+            <a href="settings.html#admin-credentials" class="profile-menu-item">
+              <i class="fa-solid fa-key" style="color: #f59e0b;"></i>
+              <span>Change Password</span>
+            </a>
+            <a href="products.html" class="profile-menu-item">
+              <i class="fa-solid fa-boxes-stacked" style="color: #3b82f6;"></i>
+              <span>Manage Products</span>
+            </a>
+            <a href="/sitemap.xml" target="_blank" class="profile-menu-item">
+              <i class="fa-solid fa-sitemap" style="color: #10b981;"></i>
+              <span>View Sitemap.xml</span>
+            </a>
+            <a href="../frontend/index.html" target="_blank" class="profile-menu-item">
+              <i class="fa-solid fa-globe" style="color: #8b5cf6;"></i>
+              <span>Live Storefront</span>
+            </a>
+
+            <div style="border-top: 1px solid var(--border-admin, #f3f4f6); margin: 6px 0;"></div>
+
+            <!-- Logout -->
+            <button type="button" class="profile-menu-item" id="dropdown-logout-btn" style="color: var(--danger);">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Logout Admin Panel</span>
+            </button>
+          </div>
         </div>
+
       </div>
     `;
+
+    setupProfileDropdownHandlers();
+  }
+}
+
+// Setup Admin Profile Dropdown Click & Color Customization Handlers
+function setupProfileDropdownHandlers() {
+  const toggleBtn = document.getElementById('admin-profile-toggle');
+  const dropdownMenu = document.getElementById('admin-profile-menu');
+  const logoutBtn = document.getElementById('dropdown-logout-btn');
+
+  if (toggleBtn && dropdownMenu) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdownMenu.classList.toggle('show');
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+      if (!toggleBtn.contains(e.target) && !dropdownMenu.contains(e.target)) {
+        dropdownMenu.classList.remove('show');
+      }
+    });
+  }
+
+  // Accent Color Customizer Dots
+  const colorDots = document.querySelectorAll('.theme-color-dot');
+  colorDots.forEach(dot => {
+    dot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const selectedColor = dot.getAttribute('data-color');
+      if (selectedColor) {
+        document.documentElement.style.setProperty('--primary-color', selectedColor);
+        localStorage.setItem('adminAccentColor', selectedColor);
+        window.showToast("Accent theme color updated!", "success");
+      }
+    });
+  });
+
+  // Apply saved accent color if present
+  const savedColor = localStorage.getItem('adminAccentColor');
+  if (savedColor) {
+    document.documentElement.style.setProperty('--primary-color', savedColor);
+  }
+
+  // Logout from dropdown
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.showConfirmModal("Confirm Logout", "Are you sure you want to log out of the admin panel?", async () => {
+        await window.api.auth.logout();
+        window.location.href = 'login.html';
+      });
+    });
   }
 }
 
