@@ -432,10 +432,12 @@ const validateSettingsInput = (req, res, next) => {
   const body = req.body || {};
   const errors = [];
 
-  if (!body.shopName || !isString(body.shopName) || body.shopName.trim() === '') {
-    errors.push('Shop name is required.');
-  } else if (body.shopName.trim().length < 2 || body.shopName.trim().length > 150) {
-    errors.push('Shop name must be between 2 and 150 characters.');
+  if (body.shopName !== undefined) {
+    if (!body.shopName || !isString(body.shopName) || body.shopName.trim() === '') {
+      errors.push('Shop name cannot be empty.');
+    } else if (body.shopName.trim().length < 2 || body.shopName.trim().length > 150) {
+      errors.push('Shop name must be between 2 and 150 characters.');
+    }
   }
 
   if (body.phone && (!isString(body.phone) || body.phone.trim().length < 5)) {

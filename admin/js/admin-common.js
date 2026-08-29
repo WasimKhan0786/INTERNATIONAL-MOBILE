@@ -221,8 +221,12 @@ function setupProfileDropdownHandlers() {
         window.showToast("Uploading profile photo...", "info");
         const base64Str = await window.api.uploadImage(file);
 
-        // Save to Database via Settings API
-        await window.api.settings.save({ adminAvatar: base64Str });
+        // Fetch current settings to pass required fields if needed
+        const currentSettings = await window.api.settings.get();
+        await window.api.settings.save({
+          shopName: currentSettings.shopName || 'INTERNATIONAL MOBILE',
+          adminAvatar: base64Str
+        });
 
         // Update all avatar circles in real time
         const avatarCircles = document.querySelectorAll('.admin-profile-avatar');
