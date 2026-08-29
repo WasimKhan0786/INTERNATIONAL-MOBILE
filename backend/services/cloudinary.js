@@ -118,8 +118,28 @@ const getOptimizedImageUrl = (url, options = {}) => {
   return url;
 };
 
+/**
+ * Helper to extract Cloudinary public_id from a full image URL string
+ */
+const extractPublicId = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  if (!url.includes('res.cloudinary.com')) return null;
+
+  try {
+    const parts = url.split('/upload/');
+    if (parts.length < 2) return null;
+    const pathWithExt = parts[1].replace(/^v\d+\//, ''); // strip version v12345/
+    const lastDotIndex = pathWithExt.lastIndexOf('.');
+    if (lastDotIndex === -1) return pathWithExt;
+    return pathWithExt.substring(0, lastDotIndex);
+  } catch (e) {
+    return null;
+  }
+};
+
 module.exports = {
   uploadImage,
   deleteImage,
-  getOptimizedImageUrl
+  getOptimizedImageUrl,
+  extractPublicId
 };

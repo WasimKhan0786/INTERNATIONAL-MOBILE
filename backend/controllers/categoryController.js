@@ -1,6 +1,6 @@
 const Category = require('../models/Category');
 const Product = require('../models/Product');
-const { uploadImage } = require('../services/cloudinary');
+const { uploadImage, deleteImage, extractPublicId } = require('../services/cloudinary');
 
 exports.getAllCategories = async (req, res) => {
   try {
@@ -160,11 +160,19 @@ exports.deleteCategory = async (req, res) => {
       });
     }
 
+    // Delete associated image from Cloudinary to save storage
+    if (category.image) {
+      const publicId = extractPublicId(category.image);
+      if (publicId) {
+        await deleteImage(publicId);
+      }
+    }
+
     await Category.findByIdAndDelete(req.params.id);
 
     return res.status(200).json({
       success: true,
-      message: 'Category deleted successfully'
+      message: 'Category and associated image deleted permanently'
     });
 
   } catch (err) {

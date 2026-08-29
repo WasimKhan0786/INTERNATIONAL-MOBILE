@@ -1,5 +1,5 @@
 const Banner = require('../models/Banner');
-const { uploadImage } = require('../services/cloudinary');
+const { uploadImage, deleteImage, extractPublicId } = require('../services/cloudinary');
 
 exports.getAllBanners = async (req, res) => {
   try {
@@ -136,11 +136,19 @@ exports.deleteBanner = async (req, res) => {
       });
     }
 
+    // Delete associated image from Cloudinary to save storage
+    if (banner.image) {
+      const publicId = extractPublicId(banner.image);
+      if (publicId) {
+        await deleteImage(publicId);
+      }
+    }
+
     await Banner.findByIdAndDelete(req.params.id);
 
     return res.status(200).json({
       success: true,
-      message: 'Banner slide deleted successfully'
+      message: 'Banner slide and associated image deleted permanently'
     });
 
   } catch (err) {
