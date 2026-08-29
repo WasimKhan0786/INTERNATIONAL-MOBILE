@@ -65,9 +65,26 @@
           <!-- Loaded dynamically -->
         </div>
 
+        <!-- Coupon Code Entry Box -->
+        <div style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+          <label for="checkout-coupon-input" style="font-size: 0.85rem; font-weight: 700; color: var(--text-color); margin-bottom: 6px; display: block;">
+            <i class="fa-solid fa-ticket" style="color: var(--primary-color);"></i> Have a Promo / Spin Coupon?
+          </label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="checkout-coupon-input" placeholder="e.g. FESTIVE10" style="text-transform: uppercase; font-family: monospace; font-weight: 700; flex-grow: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+            <button type="button" id="btn-apply-coupon" class="btn btn-outline btn-sm" style="padding: 10px 16px; font-weight: 700; border-color: var(--primary-color); color: var(--primary-color);">Apply</button>
+          </div>
+          <div id="checkout-coupon-msg" style="display: none; font-size: 0.8rem; font-weight: 700; margin-top: 6px;"></div>
+        </div>
+
         <div class="summary-row">
           <span>Subtotal</span>
           <span id="checkout-subtotal">₹0</span>
+        </div>
+
+        <div class="summary-row" id="checkout-discount-row" style="display: none; color: #10b981;">
+          <span>Coupon Discount (<span id="applied-coupon-code-span">NONE</span>)</span>
+          <span id="checkout-discount">-₹0</span>
         </div>
 
         <div class="summary-row total-row" style="margin-bottom: 25px;">

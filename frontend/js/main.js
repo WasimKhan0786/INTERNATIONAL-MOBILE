@@ -115,14 +115,16 @@ function initSpinWheelGame(settings) {
     if (titleEl && settings.spinWheelTitle) titleEl.innerHTML = settings.spinWheelTitle;
     if (subtitleEl && settings.spinWheelSubtitle) subtitleEl.innerHTML = settings.spinWheelSubtitle;
 
-    // Wheel Slices Data
+    // Wheel Slices Data (Contains winning discount slices and empty "Try Again" slices)
     const slices = [
-      { text: '10% OFF', code: 'FESTIVE10', color: '#ff5722' },
-      { text: 'Free Ship', code: 'FREESHIP', color: '#2563eb' },
-      { text: '15% OFF', code: 'MEGA15', color: '#10b981' },
-      { text: 'Free Gift', code: 'FREEGIFT', color: '#7c3aed' },
-      { text: '20% OFF', code: 'SUPER20', color: '#db2777' },
-      { text: '5% OFF', code: 'LUCKY5', color: '#f59e0b' }
+      { text: '10% OFF', code: 'FESTIVE10', color: '#ff5722', isWin: true },
+      { text: 'Try Again 😢', code: '', color: '#64748b', isWin: false },
+      { text: 'Free Ship', code: 'FREESHIP', color: '#2563eb', isWin: true },
+      { text: '15% OFF', code: 'MEGA15', color: '#10b981', isWin: true },
+      { text: 'Better Luck 😢', code: '', color: '#475569', isWin: false },
+      { text: 'Free Gift', code: 'FREEGIFT', color: '#7c3aed', isWin: true },
+      { text: '20% OFF', code: 'SUPER20', color: '#db2777', isWin: true },
+      { text: '5% OFF', code: 'LUCKY5', color: '#f59e0b', isWin: true }
     ];
 
     const ctx = canvas.getContext('2d');
@@ -163,8 +165,8 @@ function initSpinWheelGame(settings) {
         ctx.rotate(startAngle + sliceAngle / 2);
         ctx.textAlign = 'right';
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 13px sans-serif';
-        ctx.fillText(slice.text, radius - 20, 5);
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(slice.text, radius - 18, 4);
         ctx.restore();
       });
     };
@@ -177,12 +179,21 @@ function initSpinWheelGame(settings) {
         drawWheel(currentAngle);
 
         const resultBox = document.getElementById('spin-result-container');
+        const prizeTitle = document.getElementById('spin-prize-title');
         const prizeDesc = document.getElementById('spin-prize-desc');
         const couponCode = document.getElementById('spin-coupon-code');
 
         if (resultBox && prizeDesc && couponCode && parsed.winningSlice) {
-          prizeDesc.textContent = `You won '${parsed.winningSlice.text}'! Use coupon code below at checkout.`;
-          couponCode.textContent = parsed.winningSlice.code;
+          if (parsed.winningSlice.isWin) {
+            if (prizeTitle) prizeTitle.textContent = '🎉 Congratulations!';
+            prizeDesc.textContent = `You won '${parsed.winningSlice.text}'! Use coupon code below at checkout.`;
+            couponCode.textContent = parsed.winningSlice.code;
+            couponCode.parentElement.style.display = 'flex';
+          } else {
+            if (prizeTitle) prizeTitle.textContent = '😢 Better Luck Next Time!';
+            prizeDesc.textContent = `No discount prize won this time. Thank you for playing!`;
+            couponCode.parentElement.style.display = 'none';
+          }
           resultBox.style.display = 'block';
         }
 
@@ -211,6 +222,30 @@ function initSpinWheelGame(settings) {
       if (e.target === modal) modal.classList.remove('show');
     };
 
+    // Slice selection algorithm based on Admin difficulty settings
+    const selectWinningSliceIndex = () => {
+      const difficulty = settings.spinDifficulty || 'normal';
+      const emptyIndices = [1, 4];
+      const winIndices = [0, 2, 3, 5, 6, 7];
+
+      if (difficulty === 'always_lose') {
+        return emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+      }
+
+      const rand = Math.random() * 100;
+
+      if (difficulty === 'hard') {
+        // 80% chance of empty, 20% chance of win
+        return rand < 80 ? emptyIndices[Math.floor(Math.random() * emptyIndices.length)] : winIndices[Math.floor(Math.random() * winIndices.length)];
+      } else if (difficulty === 'easy') {
+        // 90% chance of win, 10% chance of empty
+        return rand < 10 ? emptyIndices[Math.floor(Math.random() * emptyIndices.length)] : winIndices[Math.floor(Math.random() * winIndices.length)];
+      } else {
+        // Normal mode: 50% win vs 50% empty
+        return rand < 50 ? emptyIndices[Math.floor(Math.random() * emptyIndices.length)] : winIndices[Math.floor(Math.random() * winIndices.length)];
+      }
+    };
+
     // Spin Animation Logic
     if (spinBtn) {
       if (hasSpun) {
@@ -224,8 +259,8 @@ function initSpinWheelGame(settings) {
         isSpinning = true;
         spinBtn.disabled = true;
 
-        // Random slice selection & rotation calculation
-        const winningIdx = Math.floor(Math.random() * slices.length);
+        // Calculate slice selection according to admin win rate difficulty
+        const winningIdx = selectWinningSliceIndex();
         const sliceAngle = (2 * Math.PI) / slices.length;
         
         // Pointer is at top (-90 degrees / 3*PI/2)
@@ -258,14 +293,23 @@ function initSpinWheelGame(settings) {
               angle: targetAngle
             }));
 
-            // Display winning coupon code
+            // Display result
             const resultBox = document.getElementById('spin-result-container');
+            const prizeTitle = document.getElementById('spin-prize-title');
             const prizeDesc = document.getElementById('spin-prize-desc');
             const couponCode = document.getElementById('spin-coupon-code');
 
             if (resultBox && prizeDesc && couponCode) {
-              prizeDesc.textContent = `You won '${winningSlice.text}'! Use coupon code below at checkout.`;
-              couponCode.textContent = winningSlice.code;
+              if (winningSlice.isWin) {
+                if (prizeTitle) prizeTitle.textContent = '🎉 Congratulations!';
+                prizeDesc.textContent = `You won '${winningSlice.text}'! Use coupon code below at checkout.`;
+                couponCode.textContent = winningSlice.code;
+                couponCode.parentElement.style.display = 'flex';
+              } else {
+                if (prizeTitle) prizeTitle.textContent = '😢 Better Luck Next Time!';
+                prizeDesc.textContent = `No discount prize won this time. Thank you for playing!`;
+                couponCode.parentElement.style.display = 'none';
+              }
               resultBox.style.display = 'block';
             }
             spinBtn.textContent = 'DONE';

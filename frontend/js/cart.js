@@ -1,8 +1,39 @@
 // TechZone Mobile Accessories - Cart Page Controller
 
 window.isUpdatingCartLocally = false;
+let cartDiscountVal = 0;
+let cartAppliedCouponCode = '';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Check if user won spin coupon
+  const savedSpin = localStorage.getItem('techzone_spin_result');
+  if (savedSpin) {
+    try {
+      const parsed = JSON.parse(savedSpin);
+      if (parsed.winningSlice && parsed.winningSlice.isWin && parsed.winningSlice.code) {
+        cartAppliedCouponCode = parsed.winningSlice.code;
+      }
+    } catch (e) {}
+  }
+
+  const couponInput = document.getElementById('cart-coupon-input');
+  const applyBtn = document.getElementById('btn-apply-cart-coupon');
+
+  if (cartAppliedCouponCode && couponInput) {
+    couponInput.value = cartAppliedCouponCode;
+  }
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      const code = couponInput ? couponInput.value.trim().toUpperCase() : '';
+      if (!code) {
+        window.showToast("Please enter a valid coupon code.", "error");
+        return;
+      }
+      applyCartCouponCode(code);
+    });
+  }
+
   renderCart();
 
   // Listen to cart update event dispatched by common.js
@@ -25,6 +56,40 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+function applyCartCouponCode(code) {
+  const msgEl = document.getElementById('cart-coupon-msg');
+  const knownCoupons = {
+    'FESTIVE10': { type: 'percentage', value: 10, label: '10% OFF' },
+    'MEGA15': { type: 'percentage', value: 15, label: '15% OFF' },
+    'SUPER20': { type: 'percentage', value: 20, label: '20% OFF' },
+    'LUCKY5': { type: 'percentage', value: 5, label: '5% OFF' },
+    'FREESHIP': { type: 'flat', value: 50, label: 'Free Shipping / ₹50 OFF' },
+    'FREEGIFT': { type: 'flat', value: 50, label: 'Free Gift / ₹50 OFF' },
+    'WELCOME10': { type: 'percentage', value: 10, label: '10% OFF' }
+  };
+
+  const coupon = knownCoupons[code];
+  if (!coupon) {
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.style.color = '#ef4444';
+      msgEl.textContent = '❌ Invalid or expired coupon code.';
+    }
+    cartDiscountVal = 0;
+    cartAppliedCouponCode = '';
+    renderSummary();
+    return;
+  }
+
+  cartAppliedCouponCode = code;
+  if (msgEl) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = '#10b981';
+    msgEl.textContent = `🎉 Coupon '${code}' active! (${coupon.label})`;
+  }
+  renderSummary();
+}
 
 // Render the cart elements
 async function renderCart() {
@@ -192,8 +257,45 @@ async function renderCart() {
 async function renderSummary() {
   const subtotalEl = document.getElementById('summary-subtotal');
   const totalEl = document.getElementById('summary-total');
+  const discountRow = document.getElementById('cart-discount-row');
+  const discountEl = document.getElementById('summary-discount');
+  const couponSpan = document.getElementById('cart-applied-coupon-span');
 
   const subtotal = window.cart.getSubtotal();
+
+  if (cartAppliedCouponCode) {
+    const knownCoupons = {
+      'FESTIVE10': { type: 'percentage', value: 10 },
+      'MEGA15': { type: 'percentage', value: 15 },
+      'SUPER20': { type: 'percentage', value: 20 },
+      'LUCKY5': { type: 'percentage', value: 5 },
+      'FREESHIP': { type: 'flat', value: 50 },
+      'FREEGIFT': { type: 'flat', value: 50 },
+      'WELCOME10': { type: 'percentage', value: 10 }
+    };
+    const c = knownCoupons[cartAppliedCouponCode];
+    if (c) {
+      if (c.type === 'percentage') {
+        cartDiscountVal = Math.round((subtotal * c.value) / 100);
+      } else {
+        cartDiscountVal = Math.min(c.value, subtotal);
+      }
+    }
+  } else {
+    cartDiscountVal = 0;
+  }
+
+  const finalTotal = Math.max(0, subtotal - cartDiscountVal);
+
   if (subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
-  if (totalEl) totalEl.textContent = `₹${subtotal}`;
+  if (discountRow) {
+    if (cartDiscountVal > 0) {
+      discountRow.style.display = 'flex';
+      if (couponSpan) couponSpan.textContent = cartAppliedCouponCode;
+      if (discountEl) discountEl.textContent = `-₹${cartDiscountVal}`;
+    } else {
+      discountRow.style.display = 'none';
+    }
+  }
+  if (totalEl) totalEl.textContent = `₹${finalTotal}`;
 }

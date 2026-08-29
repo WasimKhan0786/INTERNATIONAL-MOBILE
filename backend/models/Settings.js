@@ -144,6 +144,22 @@ const SettingsSchema = new mongoose.Schema({
     type: String,
     default: "Spin the lucky wheel to unlock special wholesale coupon codes!"
   },
+  spinDifficulty: {
+    type: String,
+    enum: ['easy', 'normal', 'hard', 'always_lose'],
+    default: 'normal'
+  },
+  customCoupons: {
+    type: Array,
+    default: [
+      { code: 'FESTIVE10', discountType: 'percentage', discountValue: 10 },
+      { code: 'FREESHIP', discountType: 'flat', discountValue: 50 },
+      { code: 'MEGA15', discountType: 'percentage', discountValue: 15 },
+      { code: 'FREEGIFT', discountType: 'flat', discountValue: 50 },
+      { code: 'SUPER20', discountType: 'percentage', discountValue: 20 },
+      { code: 'LUCKY5', discountType: 'percentage', discountValue: 5 }
+    ]
+  },
   adminAvatar: {
     type: String,
     default: ""

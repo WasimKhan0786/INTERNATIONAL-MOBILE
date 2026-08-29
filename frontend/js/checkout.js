@@ -2,7 +2,9 @@
 
 let subtotalVal = 0;
 let deliveryVal = 0;
+let discountVal = 0;
 let totalVal = 0;
+let appliedCouponCode = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const items = window.cart.get();
@@ -15,6 +17,36 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Render items summary
   await renderCheckoutSummary(items);
 
+  // Check if customer won a coupon from Spin the Wheel
+  const savedSpin = localStorage.getItem('techzone_spin_result');
+  if (savedSpin) {
+    try {
+      const parsed = JSON.parse(savedSpin);
+      if (parsed.winningSlice && parsed.winningSlice.isWin && parsed.winningSlice.code) {
+        appliedCouponCode = parsed.winningSlice.code;
+      }
+    } catch (e) {}
+  }
+
+  const couponInput = document.getElementById('checkout-coupon-input');
+  const applyBtn = document.getElementById('btn-apply-coupon');
+
+  if (appliedCouponCode && couponInput) {
+    couponInput.value = appliedCouponCode;
+    applyCouponCode(appliedCouponCode);
+  }
+
+  if (applyBtn) {
+    applyBtn.addEventListener('click', () => {
+      const code = couponInput ? couponInput.value.trim().toUpperCase() : '';
+      if (!code) {
+        window.showToast("Please enter a valid coupon code.", "error");
+        return;
+      }
+      applyCouponCode(code);
+    });
+  }
+
   // Bind form submit
   const form = document.getElementById('checkout-submit-form');
   if (form) {
@@ -22,11 +54,65 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+// Calculate and apply coupon code discount
+function applyCouponCode(code) {
+  const msgEl = document.getElementById('checkout-coupon-msg');
+  const discountRow = document.getElementById('checkout-discount-row');
+  const discountEl = document.getElementById('checkout-discount');
+  const couponSpan = document.getElementById('applied-coupon-code-span');
+  const totalEl = document.getElementById('checkout-total');
+
+  const knownCoupons = {
+    'FESTIVE10': { type: 'percentage', value: 10, label: '10% OFF' },
+    'MEGA15': { type: 'percentage', value: 15, label: '15% OFF' },
+    'SUPER20': { type: 'percentage', value: 20, label: '20% OFF' },
+    'LUCKY5': { type: 'percentage', value: 5, label: '5% OFF' },
+    'FREESHIP': { type: 'flat', value: 50, label: 'Free Shipping / ₹50 OFF' },
+    'FREEGIFT': { type: 'flat', value: 50, label: 'Free Gift / ₹50 OFF' },
+    'WELCOME10': { type: 'percentage', value: 10, label: '10% OFF' }
+  };
+
+  const coupon = knownCoupons[code];
+
+  if (!coupon) {
+    if (msgEl) {
+      msgEl.style.display = 'block';
+      msgEl.style.color = '#ef4444';
+      msgEl.textContent = '❌ Invalid or expired coupon code.';
+    }
+    if (discountRow) discountRow.style.display = 'none';
+    discountVal = 0;
+    appliedCouponCode = '';
+    totalVal = subtotalVal;
+    if (totalEl) totalEl.textContent = `₹${totalVal}`;
+    return;
+  }
+
+  if (coupon.type === 'percentage') {
+    discountVal = Math.round((subtotalVal * coupon.value) / 100);
+  } else {
+    discountVal = Math.min(coupon.value, subtotalVal);
+  }
+
+  appliedCouponCode = code;
+  totalVal = Math.max(0, subtotalVal - discountVal);
+
+  if (couponSpan) couponSpan.textContent = code;
+  if (discountEl) discountEl.textContent = `-₹${discountVal}`;
+  if (discountRow) discountRow.style.display = 'flex';
+  if (totalEl) totalEl.textContent = `₹${totalVal}`;
+
+  if (msgEl) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = '#10b981';
+    msgEl.textContent = `🎉 Coupon '${code}' applied! Saved ₹${discountVal} (${coupon.label})`;
+  }
+}
+
 // Render the cart items panel
 async function renderCheckoutSummary(items) {
   const container = document.getElementById('checkout-summary-items-list');
   const subtotalEl = document.getElementById('checkout-subtotal');
-  const deliveryEl = document.getElementById('checkout-delivery');
   const totalEl = document.getElementById('checkout-total');
 
   if (!container) return;
@@ -52,7 +138,7 @@ async function renderCheckoutSummary(items) {
   // Calculate prices
   subtotalVal = window.cart.getSubtotal();
   deliveryVal = 0;
-  totalVal = subtotalVal;
+  totalVal = Math.max(0, subtotalVal - discountVal);
   
   if (subtotalEl) subtotalEl.textContent = `₹${subtotalVal}`;
   if (totalEl) totalEl.textContent = `₹${totalVal}`;
@@ -76,7 +162,8 @@ async function handlePlaceOrder(e) {
     products: cartItems,
     subtotal: subtotalVal,
     deliveryCharge: deliveryVal,
-    discount: 0,
+    discount: discountVal,
+    couponCode: appliedCouponCode,
     total: totalVal,
     paymentMethod: 'Cash on Delivery (COD)',
     address: 'N/A',
@@ -117,6 +204,8 @@ async function handlePlaceOrder(e) {
       minute: '2-digit'
     });
 
+    const discountText = discountVal > 0 ? `\n• *Coupon Discount (${appliedCouponCode}):* -₹${discountVal}` : '';
+
     const textMsg = `🛍️ *NEW ORDER CONFIRMATION* 🛍️
 -----------------------------------
 Hello *${settings.shopName}*,
@@ -135,7 +224,7 @@ I have just placed an order on your website. Please find my order details below:
 ${itemsText}
 
 💵 *BILLING DETAILS:*
-• *Subtotal:* ₹${order.subtotal}
+• *Subtotal:* ₹${order.subtotal}${discountText}
 • *Total Amount:* *₹${order.total}*
 • *Payment Method:* Cash on Delivery (COD)
 -----------------------------------

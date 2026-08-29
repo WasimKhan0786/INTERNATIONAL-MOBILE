@@ -93,7 +93,9 @@ exports.saveSettings = async (req, res) => {
       flashSaleDiscountBadge,
       spinWheelActive,
       spinWheelTitle,
-      spinWheelSubtitle
+      spinWheelSubtitle,
+      spinDifficulty,
+      customCoupons
     } = req.body;
 
     // Handle files upload
@@ -173,6 +175,10 @@ exports.saveSettings = async (req, res) => {
     }
     if (spinWheelTitle !== undefined) settings.spinWheelTitle = spinWheelTitle;
     if (spinWheelSubtitle !== undefined) settings.spinWheelSubtitle = spinWheelSubtitle;
+    if (spinDifficulty !== undefined) settings.spinDifficulty = spinDifficulty;
+    if (customCoupons !== undefined && Array.isArray(customCoupons)) {
+      settings.customCoupons = customCoupons;
+    }
     
     if (adminEmail && typeof adminEmail === 'string' && adminEmail.trim() !== '') {
       settings.adminEmail = adminEmail.trim().toLowerCase();

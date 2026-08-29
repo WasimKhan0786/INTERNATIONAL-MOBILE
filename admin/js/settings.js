@@ -77,6 +77,7 @@ async function loadSettings() {
     document.getElementById('set-spin-active').checked = settings.spinWheelActive === true;
     document.getElementById('set-spin-title').value = settings.spinWheelTitle || '';
     document.getElementById('set-spin-subtitle').value = settings.spinWheelSubtitle || '';
+    document.getElementById('set-spin-difficulty').value = settings.spinDifficulty || 'normal';
 
     // Auth details (Keep empty by default so current credentials are preserved unless changed)
     document.getElementById('set-admin-email').value = '';
@@ -205,6 +206,7 @@ async function handleSaveSettingsSubmit(e) {
   const spinWheelActive = document.getElementById('set-spin-active').checked;
   const spinWheelTitle = document.getElementById('set-spin-title').value.trim();
   const spinWheelSubtitle = document.getElementById('set-spin-subtitle').value.trim();
+  const spinDifficulty = document.getElementById('set-spin-difficulty').value;
 
   const adminEmail = document.getElementById('set-admin-email').value.trim();
   const adminPassword = document.getElementById('set-admin-password').value;
@@ -252,7 +254,8 @@ async function handleSaveSettingsSubmit(e) {
     flashSaleEndTime,
     spinWheelActive,
     spinWheelTitle,
-    spinWheelSubtitle
+    spinWheelSubtitle,
+    spinDifficulty
   };
 
   // Only include admin credentials if explicitly entered by the user

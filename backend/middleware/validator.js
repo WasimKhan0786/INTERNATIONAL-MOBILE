@@ -315,11 +315,11 @@ const validateOrderInput = (req, res, next) => {
     }
   }
 
-  // Address
-  if (!body.address || !isString(body.address) || body.address.trim() === '') {
-    errors.push('Delivery address is required.');
-  } else if (body.address.trim().length < 5 || body.address.trim().length > 500) {
-    errors.push('Delivery address must be between 5 and 500 characters.');
+  // Address (Optional/Flexible for quick WhatsApp checkout)
+  if (body.address !== undefined && body.address !== null && body.address !== '') {
+    if (!isString(body.address) || body.address.trim().length > 500) {
+      errors.push('Delivery address cannot exceed 500 characters.');
+    }
   }
 
   // Products Array
