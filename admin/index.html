@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=login.html">
+  <title>Redirecting to Admin Control Panel...</title>
+  <script>
+    if (localStorage.getItem('adminToken')) {
+      window.location.href = 'dashboard.html';
+    } else {
+      window.location.href = 'login.html';
+    }
+  </script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+  <p>Redirecting to Admin Panel...</p>
+</body>
+</html>

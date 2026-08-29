@@ -18,7 +18,7 @@ async function generateSitemap() {
   // Ensure DB connection
   await connectDB();
 
-  const baseUrl = (process.env.SITE_URL || 'https://internationalmobile.in').replace(/\/$/, '');
+  const baseUrl = (process.env.SITE_URL || 'https://internationalmobile.xyz').replace(/\/$/, '');
   const today = new Date().toISOString().slice(0, 10);
 
   // 1. Static Pages Definition

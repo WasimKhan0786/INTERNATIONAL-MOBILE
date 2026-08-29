@@ -24,6 +24,11 @@ app.get('/', (req, res) => {
   res.redirect('/frontend/index.html');
 });
 
+// Redirect /admin and /admin/ to Admin Login Page
+app.get(['/admin', '/admin/'], (req, res) => {
+  res.redirect('/admin/login.html');
+});
+
 // Dynamic Sitemap.xml Generator Route for Google Search Engine
 const { generateSitemap } = require('./utils/generate-sitemap');
 app.get(['/sitemap.xml', '/frontend/sitemap.xml'], async (req, res) => {
