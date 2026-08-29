@@ -13,7 +13,8 @@ router.get('/', publicLimiter, settingsController.getSettings);
 // Guarded settings modifications supporting logo and favicon uploads with content validation
 router.put('/', protect, authedLimiter, upload.fields([
   { name: 'logo', maxCount: 1 },
-  { name: 'favicon', maxCount: 1 }
+  { name: 'favicon', maxCount: 1 },
+  { name: 'avatar', maxCount: 1 }
 ]), validateUploadedFileContent, validateSettingsInput, settingsController.saveSettings);
 
 module.exports = router;

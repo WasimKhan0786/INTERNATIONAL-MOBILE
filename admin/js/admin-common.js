@@ -75,6 +75,11 @@ function injectAdminLayout(session, settings) {
     const adminName = session.admin ? (session.admin.name || 'Administrator') : 'Admin';
     const adminEmail = session.admin ? (session.admin.email || 'wasimkham7861@gmail.com') : '';
     const initialLetter = (adminName.charAt(0) || 'A').toUpperCase();
+    const avatarPhoto = settings.adminAvatar || '';
+
+    const avatarContentHtml = avatarPhoto
+      ? `<img src="${avatarPhoto}" alt="Admin Profile" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`
+      : initialLetter;
 
     headerEl.innerHTML = `
       <div style="display: flex; align-items: center; gap: 12px;">
@@ -87,8 +92,8 @@ function injectAdminLayout(session, settings) {
         <!-- Interactive Profile Dropdown Wrapper -->
         <div class="admin-profile-dropdown-wrapper">
           <div class="admin-profile-toggle" id="admin-profile-toggle" title="Admin Profile & Customization Menu">
-            <div class="admin-profile-avatar">
-              ${initialLetter}
+            <div class="admin-profile-avatar" id="header-avatar-circle">
+              ${avatarContentHtml}
             </div>
             <span class="admin-profile-name">${adminName}</span>
             <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem; color: var(--text-muted);"></i>
@@ -96,10 +101,16 @@ function injectAdminLayout(session, settings) {
 
           <!-- Dropdown Popup Menu -->
           <div class="admin-profile-dropdown-menu" id="admin-profile-menu">
-            <!-- Header User Card -->
+            <!-- Header User Card with Camera Upload Overlay -->
             <div class="profile-menu-header">
-              <div class="admin-profile-avatar" style="width: 40px; height: 40px; font-size: 1.05rem;">
-                ${initialLetter}
+              <div class="admin-profile-avatar-container">
+                <div class="admin-profile-avatar" id="dropdown-avatar-circle" style="width: 44px; height: 44px; font-size: 1.1rem;">
+                  ${avatarContentHtml}
+                </div>
+                <label for="admin-avatar-file-input" class="avatar-upload-badge" title="Upload Custom Admin Photo">
+                  <i class="fa-solid fa-camera"></i>
+                  <input type="file" id="admin-avatar-file-input" accept="image/*" style="display:none;">
+                </label>
               </div>
               <div style="flex-grow: 1; min-width: 0;">
                 <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${adminName}</div>
@@ -197,6 +208,35 @@ function setupProfileDropdownHandlers() {
   const savedColor = localStorage.getItem('adminAccentColor');
   if (savedColor) {
     document.documentElement.style.setProperty('--primary-color', savedColor);
+  }
+
+  // Handle Admin Profile Photo Upload
+  const avatarFileInput = document.getElementById('admin-avatar-file-input');
+  if (avatarFileInput) {
+    avatarFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        window.showToast("Uploading profile photo...", "info");
+        const base64Str = await window.api.uploadImage(file);
+
+        // Save to Database via Settings API
+        await window.api.settings.save({ adminAvatar: base64Str });
+
+        // Update all avatar circles in real time
+        const avatarCircles = document.querySelectorAll('.admin-profile-avatar');
+        avatarCircles.forEach(circle => {
+          circle.innerHTML = `<img src="${base64Str}" alt="Admin Profile" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">`;
+        });
+
+        window.showToast("Admin profile photo updated successfully!", "success");
+      } catch (err) {
+        console.error("Profile photo upload failed:", err);
+        window.showToast(err.message || "Failed to upload profile photo.", "error");
+      }
+      avatarFileInput.value = ''; // Reset input cache
+    });
   }
 
   // Logout from dropdown

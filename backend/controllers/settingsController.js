@@ -79,12 +79,14 @@ exports.saveSettings = async (req, res) => {
       themeColor,
       secondaryColor,
       adminEmail,
-      adminPassword
+      adminPassword,
+      adminAvatar
     } = req.body;
 
     // Handle files upload
     let logoUrl = logo || settings.logo;
     let faviconUrl = favicon || settings.favicon;
+    let avatarUrl = adminAvatar !== undefined ? adminAvatar : (settings.adminAvatar || '');
 
     // Process files if sent via multipart form
     if (req.files) {
@@ -95,6 +97,10 @@ exports.saveSettings = async (req, res) => {
       if (req.files.favicon && req.files.favicon[0]) {
         const uploadRes = await uploadImage(req.files.favicon[0].buffer, req.files.favicon[0].mimetype);
         faviconUrl = uploadRes.url;
+      }
+      if (req.files.avatar && req.files.avatar[0]) {
+        const uploadRes = await uploadImage(req.files.avatar[0].buffer, req.files.avatar[0].mimetype);
+        avatarUrl = uploadRes.url;
       }
     }
 
@@ -107,12 +113,17 @@ exports.saveSettings = async (req, res) => {
       const uploadRes = await uploadImage(favicon);
       faviconUrl = uploadRes.url;
     }
+    if (adminAvatar && adminAvatar.startsWith('data:image')) {
+      const uploadRes = await uploadImage(adminAvatar);
+      avatarUrl = uploadRes.url;
+    }
 
     // Update settings schema fields
     settings.shopName = shopName || settings.shopName;
     settings.tagline = tagline || settings.tagline;
     settings.logo = logoUrl;
     settings.favicon = faviconUrl;
+    settings.adminAvatar = avatarUrl;
     settings.phone = phone || settings.phone;
     settings.whatsapp = whatsapp || settings.whatsapp;
     settings.email = email || settings.email;

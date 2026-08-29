@@ -92,6 +92,10 @@ const SettingsSchema = new mongoose.Schema({
     enum: ['open', 'closed'],
     default: 'open'
   },
+  adminAvatar: {
+    type: String,
+    default: ""
+  },
   adminEmail: {
     type: String,
     required: true,
