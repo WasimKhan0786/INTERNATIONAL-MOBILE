@@ -65,6 +65,50 @@
             <i class="fa-brands fa-whatsapp"></i> Wholesale Bulk Inquiry
           </a>
         </div>
+  </section>
+
+  <!-- Flash Sale Section with Real-Time Countdown Timer (Conditionally Rendered via Database Flag) -->
+  <section id="flash-sale-section" class="section-padding" style="display: none; background: linear-gradient(135deg, #0f172a 0%, #1e1e24 100%); color: white; border-bottom: 1px solid rgba(255,255,255,0.08);">
+    <div class="container">
+      <div style="background: rgba(255, 87, 34, 0.08); border: 1px solid rgba(255, 87, 34, 0.3); border-radius: 20px; padding: 35px 25px; text-align: center; position: relative; overflow: hidden; box-shadow: 0 15px 40px rgba(0,0,0,0.4);">
+        <!-- Flash Sale Header Badge -->
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: #ff5722; color: white; font-weight: 800; font-size: 0.8rem; padding: 6px 16px; border-radius: 25px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(255,87,34,0.4);" id="flash-sale-badge">
+          ⚡ FLASH SALE LIVE
+        </div>
+
+        <h2 id="flash-sale-title" style="font-size: 2rem; font-weight: 800; color: #ffffff; margin-bottom: 10px;">
+          ⚡ FLASH SALE - Limited Time Wholesale Deals!
+        </h2>
+        <p id="flash-sale-subtitle" style="font-size: 1rem; color: rgba(255, 255, 255, 0.8); max-width: 650px; margin: 0 auto 25px auto;">
+          Hurry! Massive discounts on top-selling cases, tempered glass & accessories ending soon.
+        </p>
+
+        <!-- Real-Time Countdown Timer Display -->
+        <div style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 30px;">
+          <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px 18px; min-width: 75px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+            <span id="timer-days" style="display: block; font-size: 1.8rem; font-weight: 800; color: #ff5722;">00</span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.7);">Days</span>
+          </div>
+          <span style="font-size: 1.5rem; font-weight: 800; color: #ff5722;">:</span>
+          <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px 18px; min-width: 75px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+            <span id="timer-hours" style="display: block; font-size: 1.8rem; font-weight: 800; color: #ff5722;">00</span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.7);">Hours</span>
+          </div>
+          <span style="font-size: 1.5rem; font-weight: 800; color: #ff5722;">:</span>
+          <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px 18px; min-width: 75px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+            <span id="timer-minutes" style="display: block; font-size: 1.8rem; font-weight: 800; color: #ff5722;">00</span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.7);">Mins</span>
+          </div>
+          <span style="font-size: 1.5rem; font-weight: 800; color: #ff5722;">:</span>
+          <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 12px 18px; min-width: 75px; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+            <span id="timer-seconds" style="display: block; font-size: 1.8rem; font-weight: 800; color: #ff5722;">00</span>
+            <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.7);">Secs</span>
+          </div>
+        </div>
+
+        <a href="shop.html?featured=true" class="btn btn-primary" style="padding: 12px 30px; font-size: 0.95rem; border-radius: 25px; font-weight: 700; box-shadow: 0 8px 20px rgba(255,87,34,0.4);">
+          <i class="fa-solid fa-bolt"></i> Claim Flash Sale Deals
+        </a>
       </div>
     </div>
   </section>

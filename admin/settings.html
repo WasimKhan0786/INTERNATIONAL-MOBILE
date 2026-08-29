@@ -160,8 +160,40 @@
           </div>
         </div>
 
+        <!-- Flash Sale Mode Section -->
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;">6. ⚡ Flash Sale & Live Countdown Timer</h3>
+        <div class="form-grid" style="margin-bottom: 25px;">
+          <div class="form-group" style="grid-column: span 2;">
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer; font-weight: 700; font-size: 1rem;">
+              <input type="checkbox" id="set-flash-active" style="width: 20px; height: 20px; accent-color: #ff5722;">
+              <span>Enable Flash Sale Mode on Website (Show Live Countdown Timer)</span>
+            </label>
+            <small style="color: var(--text-muted); margin-top: 4px; display: block;">When enabled, a dynamic ticking countdown timer section will render live on the customer homepage.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="set-flash-title">Flash Sale Title</label>
+            <input type="text" id="set-flash-title" placeholder="e.g. ⚡ FLASH SALE - Ending Soon!">
+          </div>
+
+          <div class="form-group">
+            <label for="set-flash-endtime">Flash Sale Target End Date & Time</label>
+            <input type="datetime-local" id="set-flash-endtime">
+          </div>
+
+          <div class="form-group">
+            <label for="set-flash-badge">Discount Badge Tag</label>
+            <input type="text" id="set-flash-badge" placeholder="e.g. UP TO 60% OFF">
+          </div>
+
+          <div class="form-group" style="grid-column: span 2;">
+            <label for="set-flash-subtitle">Flash Sale Subtitle / Description</label>
+            <input type="text" id="set-flash-subtitle" placeholder="e.g. Hurry! Limited time wholesale discounts on top-selling accessories.">
+          </div>
+        </div>
+
         <!-- Security Credentials -->
-        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;" id="admin-credentials">6. Change Admin Credentials (Optional)</h3>
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 5px; border-bottom: 1px solid var(--border-admin); padding-bottom: 8px;" id="admin-credentials">7. Change Admin Credentials (Optional)</h3>
         <small style="color: var(--text-muted); display: block; margin-bottom: 15px;">Leave these fields empty unless you want to update your Admin login email or password.</small>
         <div class="form-grid" style="margin-bottom: 25px;">
           <div class="form-group">

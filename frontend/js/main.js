@@ -13,9 +13,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load Customer Reviews
   initReviews();
 
-  // Fetch Settings & Check Festival Mode Flag
+  // Fetch Settings & Check Festival / Flash Sale Mode Flags
   const settings = await window.api.settings.get();
   initFestivalOffers(settings);
+  initFlashSale(settings);
 
   // Bind WhatsApp CTA Banner link
   const whatsappCta = document.getElementById('home-whatsapp-btn');
@@ -30,6 +31,69 @@ document.addEventListener('DOMContentLoaded', async () => {
     whatsappCta.href = `https://wa.me/${cleanNumber}?text=Hi,%20I%20want%20to%20place%20an%20order%20for%20mobile%20accessories.`;
   }
 });
+
+let flashSaleInterval = null;
+
+// Real-Time Countdown Timer & Flash Sale Initialization
+function initFlashSale(settings) {
+  const flashSection = document.getElementById('flash-sale-section');
+  if (!flashSection) return;
+
+  if (settings && settings.flashSaleActive) {
+    flashSection.style.display = 'block';
+
+    const titleEl = document.getElementById('flash-sale-title');
+    const badgeEl = document.getElementById('flash-sale-badge');
+    const subtitleEl = document.getElementById('flash-sale-subtitle');
+
+    if (titleEl && settings.flashSaleTitle) {
+      titleEl.innerHTML = settings.flashSaleTitle;
+    }
+    if (badgeEl && settings.flashSaleDiscountBadge) {
+      badgeEl.innerHTML = `⚡ ${settings.flashSaleDiscountBadge}`;
+    }
+    if (subtitleEl && settings.flashSaleSubtitle) {
+      subtitleEl.innerHTML = settings.flashSaleSubtitle;
+    }
+
+    // Target end time
+    let targetTime = settings.flashSaleEndTime ? new Date(settings.flashSaleEndTime).getTime() : (Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const distance = targetTime - now;
+
+      if (distance <= 0) {
+        if (flashSaleInterval) clearInterval(flashSaleInterval);
+        flashSection.style.display = 'none';
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      const daysEl = document.getElementById('timer-days');
+      const hoursEl = document.getElementById('timer-hours');
+      const minutesEl = document.getElementById('timer-minutes');
+      const secondsEl = document.getElementById('timer-seconds');
+
+      if (daysEl) daysEl.textContent = days < 10 ? '0' + days : days;
+      if (hoursEl) hoursEl.textContent = hours < 10 ? '0' + hours : hours;
+      if (minutesEl) minutesEl.textContent = minutes < 10 ? '0' + minutes : minutes;
+      if (secondsEl) secondsEl.textContent = seconds < 10 ? '0' + seconds : seconds;
+    };
+
+    updateTimer();
+    if (flashSaleInterval) clearInterval(flashSaleInterval);
+    flashSaleInterval = setInterval(updateTimer, 1000);
+
+  } else {
+    flashSection.style.display = 'none';
+    if (flashSaleInterval) clearInterval(flashSaleInterval);
+  }
+}
 
 // 0. Festival Offers Banner Initialization (Conditionally rendered from DB settings)
 function initFestivalOffers(settings) {

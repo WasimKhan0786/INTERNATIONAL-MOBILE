@@ -112,6 +112,26 @@ const SettingsSchema = new mongoose.Schema({
     type: String,
     default: "linear-gradient(135deg, #ff416c, #ff4b2b)"
   },
+  flashSaleActive: {
+    type: Boolean,
+    default: false
+  },
+  flashSaleTitle: {
+    type: String,
+    default: "⚡ FLASH SALE - Limited Time Wholesale Deals!"
+  },
+  flashSaleSubtitle: {
+    type: String,
+    default: "Hurry! Massive discounts on top-selling accessories ending soon."
+  },
+  flashSaleEndTime: {
+    type: String,
+    default: ""
+  },
+  flashSaleDiscountBadge: {
+    type: String,
+    default: "UP TO 60% OFF"
+  },
   adminAvatar: {
     type: String,
     default: ""

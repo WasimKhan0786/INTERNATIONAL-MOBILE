@@ -85,7 +85,12 @@ exports.saveSettings = async (req, res) => {
       festivalTitle,
       festivalSubtitle,
       festivalDiscountBadge,
-      festivalBannerBg
+      festivalBannerBg,
+      flashSaleActive,
+      flashSaleTitle,
+      flashSaleSubtitle,
+      flashSaleEndTime,
+      flashSaleDiscountBadge
     } = req.body;
 
     // Handle files upload
@@ -151,6 +156,14 @@ exports.saveSettings = async (req, res) => {
     if (festivalSubtitle !== undefined) settings.festivalSubtitle = festivalSubtitle;
     if (festivalDiscountBadge !== undefined) settings.festivalDiscountBadge = festivalDiscountBadge;
     if (festivalBannerBg !== undefined) settings.festivalBannerBg = festivalBannerBg;
+
+    if (flashSaleActive !== undefined) {
+      settings.flashSaleActive = flashSaleActive === true || flashSaleActive === 'true';
+    }
+    if (flashSaleTitle !== undefined) settings.flashSaleTitle = flashSaleTitle;
+    if (flashSaleSubtitle !== undefined) settings.flashSaleSubtitle = flashSaleSubtitle;
+    if (flashSaleEndTime !== undefined) settings.flashSaleEndTime = flashSaleEndTime;
+    if (flashSaleDiscountBadge !== undefined) settings.flashSaleDiscountBadge = flashSaleDiscountBadge;
     
     if (adminEmail && typeof adminEmail === 'string' && adminEmail.trim() !== '') {
       settings.adminEmail = adminEmail.trim().toLowerCase();

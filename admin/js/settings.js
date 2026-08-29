@@ -57,6 +57,22 @@ async function loadSettings() {
     document.getElementById('set-festival-badge').value = settings.festivalDiscountBadge || '';
     document.getElementById('set-festival-subtitle').value = settings.festivalSubtitle || '';
 
+    // Flash Sale Mode details
+    document.getElementById('set-flash-active').checked = settings.flashSaleActive === true;
+    document.getElementById('set-flash-title').value = settings.flashSaleTitle || '';
+    document.getElementById('set-flash-badge').value = settings.flashSaleDiscountBadge || '';
+    document.getElementById('set-flash-subtitle').value = settings.flashSaleSubtitle || '';
+    
+    if (settings.flashSaleEndTime) {
+      try {
+        const dt = new Date(settings.flashSaleEndTime);
+        const isoStr = new Date(dt.getTime() - (dt.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        document.getElementById('set-flash-endtime').value = isoStr;
+      } catch (e) {
+        document.getElementById('set-flash-endtime').value = '';
+      }
+    }
+
     // Auth details (Keep empty by default so current credentials are preserved unless changed)
     document.getElementById('set-admin-email').value = '';
     document.getElementById('set-admin-password').value = '';
@@ -174,6 +190,13 @@ async function handleSaveSettingsSubmit(e) {
   const festivalDiscountBadge = document.getElementById('set-festival-badge').value.trim();
   const festivalSubtitle = document.getElementById('set-festival-subtitle').value.trim();
 
+  const flashSaleActive = document.getElementById('set-flash-active').checked;
+  const flashSaleTitle = document.getElementById('set-flash-title').value.trim();
+  const flashSaleDiscountBadge = document.getElementById('set-flash-badge').value.trim();
+  const flashSaleSubtitle = document.getElementById('set-flash-subtitle').value.trim();
+  const flashSaleEndTimeInput = document.getElementById('set-flash-endtime').value;
+  const flashSaleEndTime = flashSaleEndTimeInput ? new Date(flashSaleEndTimeInput).toISOString() : '';
+
   const adminEmail = document.getElementById('set-admin-email').value.trim();
   const adminPassword = document.getElementById('set-admin-password').value;
 
@@ -212,7 +235,12 @@ async function handleSaveSettingsSubmit(e) {
     festivalModeActive,
     festivalTitle,
     festivalDiscountBadge,
-    festivalSubtitle
+    festivalSubtitle,
+    flashSaleActive,
+    flashSaleTitle,
+    flashSaleDiscountBadge,
+    flashSaleSubtitle,
+    flashSaleEndTime
   };
 
   // Only include admin credentials if explicitly entered by the user
