@@ -90,7 +90,10 @@ exports.saveSettings = async (req, res) => {
       flashSaleTitle,
       flashSaleSubtitle,
       flashSaleEndTime,
-      flashSaleDiscountBadge
+      flashSaleDiscountBadge,
+      spinWheelActive,
+      spinWheelTitle,
+      spinWheelSubtitle
     } = req.body;
 
     // Handle files upload
@@ -164,6 +167,12 @@ exports.saveSettings = async (req, res) => {
     if (flashSaleSubtitle !== undefined) settings.flashSaleSubtitle = flashSaleSubtitle;
     if (flashSaleEndTime !== undefined) settings.flashSaleEndTime = flashSaleEndTime;
     if (flashSaleDiscountBadge !== undefined) settings.flashSaleDiscountBadge = flashSaleDiscountBadge;
+
+    if (spinWheelActive !== undefined) {
+      settings.spinWheelActive = spinWheelActive === true || spinWheelActive === 'true';
+    }
+    if (spinWheelTitle !== undefined) settings.spinWheelTitle = spinWheelTitle;
+    if (spinWheelSubtitle !== undefined) settings.spinWheelSubtitle = spinWheelSubtitle;
     
     if (adminEmail && typeof adminEmail === 'string' && adminEmail.trim() !== '') {
       settings.adminEmail = adminEmail.trim().toLowerCase();

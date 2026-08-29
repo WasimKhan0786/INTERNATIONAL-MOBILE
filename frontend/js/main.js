@@ -13,10 +13,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load Customer Reviews
   initReviews();
 
-  // Fetch Settings & Check Festival / Flash Sale Mode Flags
+  // Fetch Settings & Check Festival / Flash Sale / Spin Wheel Mode Flags
   const settings = await window.api.settings.get();
   initFestivalOffers(settings);
   initFlashSale(settings);
+  initSpinWheelGame(settings);
 
   // Bind WhatsApp CTA Banner link
   const whatsappCta = document.getElementById('home-whatsapp-btn');
@@ -92,6 +93,156 @@ function initFlashSale(settings) {
   } else {
     flashSection.style.display = 'none';
     if (flashSaleInterval) clearInterval(flashSaleInterval);
+  }
+}
+
+// Interactive Spin the Wheel Game Initialization
+function initSpinWheelGame(settings) {
+  const floatBtn = document.getElementById('spin-wheel-floating-btn');
+  const modal = document.getElementById('spin-wheel-modal');
+  const closeBtn = document.getElementById('spin-modal-close-btn');
+  const spinBtn = document.getElementById('btn-spin-now');
+  const canvas = document.getElementById('spin-canvas');
+  const copyBtn = document.getElementById('btn-copy-spin-coupon');
+
+  if (!floatBtn || !modal || !canvas) return;
+
+  if (settings && settings.spinWheelActive) {
+    floatBtn.style.display = 'flex';
+
+    const titleEl = document.getElementById('spin-game-title');
+    const subtitleEl = document.getElementById('spin-game-subtitle');
+    if (titleEl && settings.spinWheelTitle) titleEl.innerHTML = settings.spinWheelTitle;
+    if (subtitleEl && settings.spinWheelSubtitle) subtitleEl.innerHTML = settings.spinWheelSubtitle;
+
+    // Wheel Slices Data
+    const slices = [
+      { text: '10% OFF', code: 'FESTIVE10', color: '#ff5722' },
+      { text: 'Free Ship', code: 'FREESHIP', color: '#2563eb' },
+      { text: '15% OFF', code: 'MEGA15', color: '#10b981' },
+      { text: 'Free Gift', code: 'FREEGIFT', color: '#7c3aed' },
+      { text: '20% OFF', code: 'SUPER20', color: '#db2777' },
+      { text: '5% OFF', code: 'LUCKY5', color: '#f59e0b' }
+    ];
+
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = canvas.width / 2 - 10;
+
+    let currentAngle = 0;
+    let isSpinning = false;
+
+    // Draw HTML5 Canvas Wheel
+    const drawWheel = (angleOffset = 0) => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const sliceAngle = (2 * Math.PI) / slices.length;
+
+      slices.forEach((slice, idx) => {
+        const startAngle = angleOffset + idx * sliceAngle;
+        const endAngle = startAngle + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+
+        ctx.fillStyle = slice.color;
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#ffffff';
+        ctx.stroke();
+
+        // Draw slice text
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(startAngle + sliceAngle / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(slice.text, radius - 20, 5);
+        ctx.restore();
+      });
+    };
+
+    drawWheel(0);
+
+    // Modal Open & Close Listeners
+    floatBtn.onclick = () => {
+      modal.classList.add('show');
+    };
+    if (closeBtn) {
+      closeBtn.onclick = () => {
+        modal.classList.remove('show');
+      };
+    }
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.classList.remove('show');
+    };
+
+    // Spin Animation Logic
+    if (spinBtn) {
+      spinBtn.onclick = () => {
+        if (isSpinning) return;
+        isSpinning = true;
+        spinBtn.disabled = true;
+
+        // Random slice selection & rotation calculation
+        const winningIdx = Math.floor(Math.random() * slices.length);
+        const sliceAngle = (2 * Math.PI) / slices.length;
+        
+        // Pointer is at top (-90 degrees / 3*PI/2)
+        const targetAngle = (3 * Math.PI / 2) - (winningIdx * sliceAngle) - (sliceAngle / 2) + (8 * 2 * Math.PI);
+        
+        const startTime = performance.now();
+        const duration = 4000; // 4 seconds spin animation
+
+        const animateSpin = (now) => {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          
+          // Ease out cubic formula
+          const easeOut = 1 - Math.pow(1 - progress, 3);
+          currentAngle = easeOut * targetAngle;
+
+          drawWheel(currentAngle);
+
+          if (progress < 1) {
+            requestAnimationFrame(animateSpin);
+          } else {
+            isSpinning = false;
+            const winningSlice = slices[winningIdx];
+            
+            // Display winning coupon code
+            const resultBox = document.getElementById('spin-result-container');
+            const prizeDesc = document.getElementById('spin-prize-desc');
+            const couponCode = document.getElementById('spin-coupon-code');
+
+            if (resultBox && prizeDesc && couponCode) {
+              prizeDesc.textContent = `You won '${winningSlice.text}'! Use coupon code below at checkout.`;
+              couponCode.textContent = winningSlice.code;
+              resultBox.style.display = 'block';
+            }
+            spinBtn.textContent = 'SPUN!';
+          }
+        };
+
+        requestAnimationFrame(animateSpin);
+      };
+    }
+
+    // Copy Coupon Code Button
+    if (copyBtn) {
+      copyBtn.onclick = () => {
+        const code = document.getElementById('spin-coupon-code').textContent;
+        navigator.clipboard.writeText(code);
+        window.showToast(`Coupon code '${code}' copied to clipboard!`, "success");
+      };
+    }
+
+  } else {
+    floatBtn.style.display = 'none';
+    modal.style.display = 'none';
   }
 }
 

@@ -73,6 +73,11 @@ async function loadSettings() {
       }
     }
 
+    // Spin the Wheel Game details
+    document.getElementById('set-spin-active').checked = settings.spinWheelActive === true;
+    document.getElementById('set-spin-title').value = settings.spinWheelTitle || '';
+    document.getElementById('set-spin-subtitle').value = settings.spinWheelSubtitle || '';
+
     // Auth details (Keep empty by default so current credentials are preserved unless changed)
     document.getElementById('set-admin-email').value = '';
     document.getElementById('set-admin-password').value = '';
@@ -197,6 +202,10 @@ async function handleSaveSettingsSubmit(e) {
   const flashSaleEndTimeInput = document.getElementById('set-flash-endtime').value;
   const flashSaleEndTime = flashSaleEndTimeInput ? new Date(flashSaleEndTimeInput).toISOString() : '';
 
+  const spinWheelActive = document.getElementById('set-spin-active').checked;
+  const spinWheelTitle = document.getElementById('set-spin-title').value.trim();
+  const spinWheelSubtitle = document.getElementById('set-spin-subtitle').value.trim();
+
   const adminEmail = document.getElementById('set-admin-email').value.trim();
   const adminPassword = document.getElementById('set-admin-password').value;
 
@@ -240,7 +249,10 @@ async function handleSaveSettingsSubmit(e) {
     flashSaleTitle,
     flashSaleDiscountBadge,
     flashSaleSubtitle,
-    flashSaleEndTime
+    flashSaleEndTime,
+    spinWheelActive,
+    spinWheelTitle,
+    spinWheelSubtitle
   };
 
   // Only include admin credentials if explicitly entered by the user

@@ -132,6 +132,18 @@ const SettingsSchema = new mongoose.Schema({
     type: String,
     default: "UP TO 60% OFF"
   },
+  spinWheelActive: {
+    type: Boolean,
+    default: false
+  },
+  spinWheelTitle: {
+    type: String,
+    default: "🎰 Spin & Win Exclusive Discounts!"
+  },
+  spinWheelSubtitle: {
+    type: String,
+    default: "Spin the lucky wheel to unlock special wholesale coupon codes!"
+  },
   adminAvatar: {
     type: String,
     default: ""
