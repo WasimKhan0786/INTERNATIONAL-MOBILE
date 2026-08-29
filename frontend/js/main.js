@@ -13,8 +13,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Load Customer Reviews
   initReviews();
 
-  // Bind WhatsApp CTA Banner link
+  // Fetch Settings & Check Festival Mode Flag
   const settings = await window.api.settings.get();
+  initFestivalOffers(settings);
+
+  // Bind WhatsApp CTA Banner link
   const whatsappCta = document.getElementById('home-whatsapp-btn');
   if (whatsappCta && settings.whatsapp) {
     let cleanNumber = settings.whatsapp.replace(/[^0-9]/g, '');
@@ -27,6 +30,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     whatsappCta.href = `https://wa.me/${cleanNumber}?text=Hi,%20I%20want%20to%20place%20an%20order%20for%20mobile%20accessories.`;
   }
 });
+
+// 0. Festival Offers Banner Initialization (Conditionally rendered from DB settings)
+function initFestivalOffers(settings) {
+  const festivalSection = document.getElementById('festival-offers-section');
+  if (!festivalSection) return;
+
+  if (settings && settings.festivalModeActive) {
+    festivalSection.style.display = 'block';
+
+    const titleEl = document.getElementById('festival-title');
+    const badgeEl = document.getElementById('festival-badge');
+    const subtitleEl = document.getElementById('festival-subtitle');
+
+    if (titleEl && settings.festivalTitle) {
+      titleEl.innerHTML = settings.festivalTitle;
+    }
+    if (badgeEl && settings.festivalDiscountBadge) {
+      badgeEl.innerHTML = `🎉 ${settings.festivalDiscountBadge}`;
+    }
+    if (subtitleEl && settings.festivalSubtitle) {
+      subtitleEl.innerHTML = settings.festivalSubtitle;
+    }
+  } else {
+    festivalSection.style.display = 'none';
+  }
+}
 
 // 1. Carousel Initialization
 async function initBanners() {

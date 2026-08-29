@@ -92,6 +92,26 @@ const SettingsSchema = new mongoose.Schema({
     enum: ['open', 'closed'],
     default: 'open'
   },
+  festivalModeActive: {
+    type: Boolean,
+    default: false
+  },
+  festivalTitle: {
+    type: String,
+    default: "🎉 Festive Mega Sale & Special Wholesale Offers!"
+  },
+  festivalSubtitle: {
+    type: String,
+    default: "Get up to 40% OFF on premium mobile covers, tempered glass, chargers & accessories!"
+  },
+  festivalDiscountBadge: {
+    type: String,
+    default: "FLAT 40% OFF"
+  },
+  festivalBannerBg: {
+    type: String,
+    default: "linear-gradient(135deg, #ff416c, #ff4b2b)"
+  },
   adminAvatar: {
     type: String,
     default: ""

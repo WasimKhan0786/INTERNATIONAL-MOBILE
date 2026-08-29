@@ -80,7 +80,12 @@ exports.saveSettings = async (req, res) => {
       secondaryColor,
       adminEmail,
       adminPassword,
-      adminAvatar
+      adminAvatar,
+      festivalModeActive,
+      festivalTitle,
+      festivalSubtitle,
+      festivalDiscountBadge,
+      festivalBannerBg
     } = req.body;
 
     // Handle files upload
@@ -138,6 +143,14 @@ exports.saveSettings = async (req, res) => {
     settings.currency = currency || settings.currency;
     settings.themeColor = themeColor || settings.themeColor;
     settings.secondaryColor = secondaryColor || settings.secondaryColor;
+
+    if (festivalModeActive !== undefined) {
+      settings.festivalModeActive = festivalModeActive === true || festivalModeActive === 'true';
+    }
+    if (festivalTitle !== undefined) settings.festivalTitle = festivalTitle;
+    if (festivalSubtitle !== undefined) settings.festivalSubtitle = festivalSubtitle;
+    if (festivalDiscountBadge !== undefined) settings.festivalDiscountBadge = festivalDiscountBadge;
+    if (festivalBannerBg !== undefined) settings.festivalBannerBg = festivalBannerBg;
     
     if (adminEmail && typeof adminEmail === 'string' && adminEmail.trim() !== '') {
       settings.adminEmail = adminEmail.trim().toLowerCase();

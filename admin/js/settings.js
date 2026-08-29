@@ -51,6 +51,12 @@ async function loadSettings() {
     document.getElementById('set-color-primary').value = settings.themeColor || '#ff5722';
     document.getElementById('set-color-secondary').value = settings.secondaryColor || '#1e1e24';
 
+    // Festival Mode details
+    document.getElementById('set-festival-active').checked = settings.festivalModeActive === true;
+    document.getElementById('set-festival-title').value = settings.festivalTitle || '';
+    document.getElementById('set-festival-badge').value = settings.festivalDiscountBadge || '';
+    document.getElementById('set-festival-subtitle').value = settings.festivalSubtitle || '';
+
     // Auth details (Keep empty by default so current credentials are preserved unless changed)
     document.getElementById('set-admin-email').value = '';
     document.getElementById('set-admin-password').value = '';
@@ -163,6 +169,11 @@ async function handleSaveSettingsSubmit(e) {
   const themeColor = document.getElementById('set-color-primary').value;
   const secondaryColor = document.getElementById('set-color-secondary').value;
 
+  const festivalModeActive = document.getElementById('set-festival-active').checked;
+  const festivalTitle = document.getElementById('set-festival-title').value.trim();
+  const festivalDiscountBadge = document.getElementById('set-festival-badge').value.trim();
+  const festivalSubtitle = document.getElementById('set-festival-subtitle').value.trim();
+
   const adminEmail = document.getElementById('set-admin-email').value.trim();
   const adminPassword = document.getElementById('set-admin-password').value;
 
@@ -197,7 +208,11 @@ async function handleSaveSettingsSubmit(e) {
     freeDeliveryThreshold,
     currency,
     themeColor,
-    secondaryColor
+    secondaryColor,
+    festivalModeActive,
+    festivalTitle,
+    festivalDiscountBadge,
+    festivalSubtitle
   };
 
   // Only include admin credentials if explicitly entered by the user
