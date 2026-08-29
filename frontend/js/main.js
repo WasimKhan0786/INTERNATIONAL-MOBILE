@@ -133,6 +133,10 @@ function initSpinWheelGame(settings) {
     let currentAngle = 0;
     let isSpinning = false;
 
+    // Check if user has already spun previously
+    const savedSpin = localStorage.getItem('techzone_spin_result');
+    let hasSpun = false;
+
     // Draw HTML5 Canvas Wheel
     const drawWheel = (angleOffset = 0) => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -165,7 +169,34 @@ function initSpinWheelGame(settings) {
       });
     };
 
-    drawWheel(0);
+    if (savedSpin) {
+      try {
+        const parsed = JSON.parse(savedSpin);
+        hasSpun = true;
+        currentAngle = parsed.angle || 0;
+        drawWheel(currentAngle);
+
+        const resultBox = document.getElementById('spin-result-container');
+        const prizeDesc = document.getElementById('spin-prize-desc');
+        const couponCode = document.getElementById('spin-coupon-code');
+
+        if (resultBox && prizeDesc && couponCode && parsed.winningSlice) {
+          prizeDesc.textContent = `You won '${parsed.winningSlice.text}'! Use coupon code below at checkout.`;
+          couponCode.textContent = parsed.winningSlice.code;
+          resultBox.style.display = 'block';
+        }
+
+        if (spinBtn) {
+          spinBtn.disabled = true;
+          spinBtn.textContent = 'DONE';
+          spinBtn.style.fontSize = '0.75rem';
+        }
+      } catch (e) {
+        drawWheel(0);
+      }
+    } else {
+      drawWheel(0);
+    }
 
     // Modal Open & Close Listeners
     floatBtn.onclick = () => {
@@ -182,8 +213,14 @@ function initSpinWheelGame(settings) {
 
     // Spin Animation Logic
     if (spinBtn) {
+      if (hasSpun) {
+        spinBtn.disabled = true;
+        spinBtn.textContent = 'DONE';
+        spinBtn.style.fontSize = '0.75rem';
+      }
+
       spinBtn.onclick = () => {
-        if (isSpinning) return;
+        if (isSpinning || hasSpun || localStorage.getItem('techzone_spin_result')) return;
         isSpinning = true;
         spinBtn.disabled = true;
 
@@ -211,8 +248,16 @@ function initSpinWheelGame(settings) {
             requestAnimationFrame(animateSpin);
           } else {
             isSpinning = false;
+            hasSpun = true;
             const winningSlice = slices[winningIdx];
             
+            // Save to localStorage so reloading doesn't allow re-spinning
+            localStorage.setItem('techzone_spin_result', JSON.stringify({
+              winningSlice,
+              winningIdx,
+              angle: targetAngle
+            }));
+
             // Display winning coupon code
             const resultBox = document.getElementById('spin-result-container');
             const prizeDesc = document.getElementById('spin-prize-desc');
@@ -223,7 +268,8 @@ function initSpinWheelGame(settings) {
               couponCode.textContent = winningSlice.code;
               resultBox.style.display = 'block';
             }
-            spinBtn.textContent = 'SPUN!';
+            spinBtn.textContent = 'DONE';
+            spinBtn.style.fontSize = '0.75rem';
           }
         };
 
