@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary').v2;
 const dotenv = require('dotenv');
+const { validateImageMagicBytes } = require('../middleware/uploadSecurity');
 
 dotenv.config();
 
@@ -11,6 +12,12 @@ cloudinary.config({
 });
 
 const uploadImage = async (imageInput, mimeType = 'image/jpeg') => {
+  if (Buffer.isBuffer(imageInput)) {
+    if (!validateImageMagicBytes(imageInput)) {
+      throw new Error('Security Error: Uploaded buffer failed binary magic byte content inspection. Not a valid image.');
+    }
+  }
+
   const isConfigured = process.env.CLOUDINARY_CLOUD_NAME && 
                        process.env.CLOUDINARY_CLOUD_NAME !== 'your_cloudinary_cloud_name' &&
                        process.env.CLOUDINARY_CLOUD_NAME.trim() !== '';

@@ -31,8 +31,8 @@ const DEFAULT_SETTINGS = {
   currency: "₹",
   themeColor: "#ff5722",
   secondaryColor: "#1e1e24",
-  adminEmail: "wasimkham7861@gmail.com",
-  adminPassword: "wasim$$0786"
+  adminEmail: process.env.ADMIN_EMAIL || "admin@techzone.com",
+  adminPassword: process.env.ADMIN_PASSWORD || "admin123"
 };
 
 const DEFAULT_CATEGORIES = [

@@ -62,10 +62,10 @@ exports.createBanner = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('[BANNER CREATE ERROR]', err.stack || err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Server error creating banner'
+      message: 'An error occurred while creating the banner slide. Please try again.'
     });
   }
 };
@@ -118,10 +118,10 @@ exports.updateBanner = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('[BANNER UPDATE ERROR]', err.stack || err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Server error updating banner'
+      message: 'An error occurred while updating the banner slide. Please try again.'
     });
   }
 };

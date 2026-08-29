@@ -1,9 +1,11 @@
 const User = require('../models/User');
 const Settings = require('../models/Settings');
 const jwt = require('jsonwebtoken');
+const { recordAuthSuccess, recordAuthFailure } = require('../middleware/rateLimiter');
 
 const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'techzone_secret_key_2026', {
+  const jwtSecret = process.env.JWT_SECRET || 'techzone_default_jwt_secret';
+  return jwt.sign({ id }, jwtSecret, {
     expiresIn: '7d'
   });
 };
@@ -24,6 +26,7 @@ exports.login = async (req, res) => {
     // Find admin user by email
     const user = await User.findOne({ email: cleanEmail });
     if (!user) {
+      recordAuthFailure(req);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -36,6 +39,7 @@ exports.login = async (req, res) => {
       isMatch = await user.comparePassword(password);
     } catch (bcryptErr) {
       console.error('Password comparison failed for user:', cleanEmail, bcryptErr);
+      recordAuthFailure(req);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -43,11 +47,15 @@ exports.login = async (req, res) => {
     }
 
     if (!isMatch) {
+      recordAuthFailure(req);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
+
+    // Reset rate limiter backoff on success
+    recordAuthSuccess(req);
 
     // Generate JWT Token
     const token = signToken(user._id);
@@ -64,10 +72,10 @@ exports.login = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Authentication login error:', err);
+    console.error('[AUTH CONTROLLER ERROR]', err.stack || err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Server error during authentication login'
+      message: 'An unexpected server error occurred during login. Please try again.'
     });
   }
 };

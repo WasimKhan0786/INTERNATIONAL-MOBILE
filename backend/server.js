@@ -36,12 +36,12 @@ app.use('/api/banners', require('./routes/banners'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/reviews', require('./routes/reviews'));
 
-// Global Error Handler
+// Global Error Handler (Prevents stack traces and file paths leakage)
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
+  console.error('[SERVER ERROR HANDLER]', err.stack || err);
+  res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal Server Error'
+    message: 'An unexpected server error occurred. Please try again later.'
   });
 });
 
@@ -74,8 +74,8 @@ async function autoSeedIfNeeded() {
     const User = require('./models/User');
     const Settings = require('./models/Settings');
 
-    const targetAdminEmail = (process.env.ADMIN_EMAIL || 'wasimkham7861@gmail.com').toLowerCase().trim();
-    const targetAdminPassword = process.env.ADMIN_PASSWORD || 'wasim$$0786';
+    const targetAdminEmail = (process.env.ADMIN_EMAIL || 'admin@techzone.com').toLowerCase().trim();
+    const targetAdminPassword = process.env.ADMIN_PASSWORD || 'admin123';
 
     // 1. Sync or create primary Admin account
     let adminUser = await User.findOne({ email: targetAdminEmail });
@@ -138,12 +138,12 @@ async function autoSeedIfNeeded() {
       console.log('No admin found. Seeding default administrator...');
       const defaultAdmin = new User({
         name: 'Administrator',
-        email: 'wasimkham7861@gmail.com',
-        password: 'wasim$$0786', // Model pre-save hook hashes this
+        email: targetAdminEmail,
+        password: targetAdminPassword, // Model pre-save hook hashes this
         role: 'admin'
       });
       await defaultAdmin.save();
-      console.log('Seeded admin: wasimkham7861@gmail.com / wasim$$0786');
+      console.log(`Seeded admin: ${targetAdminEmail}`);
     }
 
     const settingsCount = await Settings.countDocuments();

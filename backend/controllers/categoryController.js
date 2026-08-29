@@ -69,10 +69,10 @@ exports.createCategory = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('[CATEGORY CREATE ERROR]', err.stack || err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Server error creating category'
+      message: 'An error occurred while creating the category. Please try again.'
     });
   }
 };
@@ -133,10 +133,10 @@ exports.updateCategory = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('[CATEGORY UPDATE ERROR]', err.stack || err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Server error updating category'
+      message: 'An error occurred while updating the category. Please try again.'
     });
   }
 };

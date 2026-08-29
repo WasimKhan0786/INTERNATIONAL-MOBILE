@@ -95,12 +95,12 @@ const SettingsSchema = new mongoose.Schema({
   adminEmail: {
     type: String,
     required: true,
-    default: "wasimkham7861@gmail.com"
+    default: process.env.ADMIN_EMAIL || "admin@techzone.com"
   },
   adminPassword: {
     type: String,
     required: true,
-    default: "wasim$$0786"
+    default: process.env.ADMIN_PASSWORD || "admin123"
   }
 }, {
   timestamps: true

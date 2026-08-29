@@ -591,10 +591,10 @@ exports.bulkUploadProducts = async (req, res) => {
     }
 
   } catch (err) {
-    console.error('Bulk upload error:', err);
+    console.error('[PRODUCT BULK UPLOAD ERROR]', err.stack || err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Server error processing bulk products upload'
+      message: 'An error occurred while processing the bulk products upload. Please try again.'
     });
   }
 };

@@ -165,10 +165,10 @@ exports.createOrder = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('[ORDER CREATION ERROR]', err.stack || err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Server error placing order'
+      message: 'An error occurred while processing your order. Please try again or contact customer support.'
     });
   }
 };

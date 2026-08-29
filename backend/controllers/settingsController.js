@@ -21,7 +21,8 @@ exports.getSettings = async (req, res) => {
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       const token = req.headers.authorization.split(' ')[1];
       try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'techzone_secret_key_2026');
+        const jwtSecret = process.env.JWT_SECRET || 'techzone_default_jwt_secret';
+        const decoded = jwt.verify(token, jwtSecret);
         const admin = await User.findById(decoded.id);
         if (admin) {
           isAdmin = true;
@@ -156,10 +157,10 @@ exports.saveSettings = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error('[SETTINGS SAVE ERROR]', err.stack || err);
     return res.status(500).json({
       success: false,
-      message: err.message || 'Server error updating settings config'
+      message: 'An error occurred while saving website settings. Please try again.'
     });
   }
 };

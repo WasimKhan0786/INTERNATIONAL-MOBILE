@@ -2,20 +2,21 @@ const express = require('express');
 const router = express.Router();
 const settingsController = require('../controllers/settingsController');
 const protect = require('../middleware/auth');
-const multer = require('multer');
+const { publicLimiter, authedLimiter } = require('../middleware/rateLimiter');
+const { validateSettingsInput } = require('../middleware/validator');
+const { createSecureUploader, validateUploadedFileContent } = require('../middleware/uploadSecurity');
 
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage,
-  limits: { fileSize: 1 * 1024 * 1024 } // 1MB limits for icons/logo
-});
+const upload = createSecureUploader(2 * 1024 * 1024);
 
-router.get('/', settingsController.getSettings);
+router.get('/', publicLimiter, settingsController.getSettings);
 
-// Guarded settings modifications supporting logo and favicon uploads
-router.put('/', protect, upload.fields([
+// Guarded settings modifications supporting logo and favicon uploads with content validation
+router.put('/', protect, authedLimiter, upload.fields([
   { name: 'logo', maxCount: 1 },
   { name: 'favicon', maxCount: 1 }
-]), settingsController.saveSettings);
+]), validateUploadedFileContent, validateSettingsInput, settingsController.saveSettings);
 
 module.exports = router;
+
+
+

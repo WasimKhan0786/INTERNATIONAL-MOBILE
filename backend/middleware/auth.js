@@ -21,7 +21,8 @@ module.exports = async (req, res, next) => {
     }
 
     // Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'techzone_secret_key_2026');
+    const jwtSecret = process.env.JWT_SECRET || 'techzone_default_jwt_secret';
+    const decoded = jwt.verify(token, jwtSecret);
 
     // Load admin user session
     const admin = await User.findById(decoded.id).select('-password');
