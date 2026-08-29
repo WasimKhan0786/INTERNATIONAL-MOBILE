@@ -24,6 +24,19 @@ app.get('/', (req, res) => {
   res.redirect('/frontend/index.html');
 });
 
+// Dynamic Sitemap.xml Generator Route for Google Search Engine
+const { generateSitemap } = require('./utils/generate-sitemap');
+app.get(['/sitemap.xml', '/frontend/sitemap.xml'], async (req, res) => {
+  try {
+    const xml = await generateSitemap();
+    res.header('Content-Type', 'text/xml');
+    return res.status(200).send(xml);
+  } catch (err) {
+    console.error('Sitemap route error:', err);
+    return res.status(500).send('Error generating sitemap XML');
+  }
+});
+
 // Ensure DB is connected before processing any /api request
 app.use('/api', ensureDbConnected);
 

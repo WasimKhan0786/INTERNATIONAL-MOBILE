@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
-    "seed": "node backend/utils/seed.js"
+    "seed": "node backend/utils/seed.js",
+    "generate-sitemap": "node backend/utils/generate-sitemap.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
