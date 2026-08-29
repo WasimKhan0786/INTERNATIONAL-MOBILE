@@ -51,9 +51,9 @@ async function loadSettings() {
     document.getElementById('set-color-primary').value = settings.themeColor || '#ff5722';
     document.getElementById('set-color-secondary').value = settings.secondaryColor || '#1e1e24';
 
-    // Auth details
-    document.getElementById('set-admin-email').value = settings.adminEmail || 'admin@techzone.com';
-    document.getElementById('set-admin-password').value = settings.adminPassword || 'admin123';
+    // Auth details (Keep empty by default so current credentials are preserved unless changed)
+    document.getElementById('set-admin-email').value = '';
+    document.getElementById('set-admin-password').value = '';
 
     // Image previews
     logoImage = settings.logo;
@@ -197,10 +197,16 @@ async function handleSaveSettingsSubmit(e) {
     freeDeliveryThreshold,
     currency,
     themeColor,
-    secondaryColor,
-    adminEmail,
-    adminPassword
+    secondaryColor
   };
+
+  // Only include admin credentials if explicitly entered by the user
+  if (adminEmail) {
+    payload.adminEmail = adminEmail;
+  }
+  if (adminPassword) {
+    payload.adminPassword = adminPassword;
+  }
 
   try {
     const saveBtn = document.getElementById('btn-save-settings');

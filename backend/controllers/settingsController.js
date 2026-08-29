@@ -128,26 +128,27 @@ exports.saveSettings = async (req, res) => {
     settings.themeColor = themeColor || settings.themeColor;
     settings.secondaryColor = secondaryColor || settings.secondaryColor;
     
-    if (adminEmail) settings.adminEmail = adminEmail.toLowerCase();
-    if (adminPassword) settings.adminPassword = adminPassword;
+    if (adminEmail && typeof adminEmail === 'string' && adminEmail.trim() !== '') {
+      settings.adminEmail = adminEmail.trim().toLowerCase();
+    }
+    if (adminPassword && typeof adminPassword === 'string' && adminPassword.trim() !== '') {
+      settings.adminPassword = adminPassword;
+    }
 
     await settings.save();
 
-    // Synchronize administrative credentials in User collection
-    if (adminEmail && adminPassword) {
+    // Synchronize administrative credentials in User collection if updated
+    if ((adminEmail && adminEmail.trim() !== '') || (adminPassword && adminPassword.trim() !== '')) {
       let mainAdmin = await User.findOne({ role: 'admin' });
-      if (!mainAdmin) {
-        mainAdmin = new User({
-          name: 'Administrator',
-          email: adminEmail.toLowerCase(),
-          password: adminPassword,
-          role: 'admin'
-        });
-      } else {
-        mainAdmin.email = adminEmail.toLowerCase();
-        mainAdmin.password = adminPassword; // Pre-save hooks will encrypt
+      if (mainAdmin) {
+        if (adminEmail && adminEmail.trim() !== '') {
+          mainAdmin.email = adminEmail.trim().toLowerCase();
+        }
+        if (adminPassword && adminPassword.trim() !== '') {
+          mainAdmin.password = adminPassword; // Pre-save hook hashes password
+        }
+        await mainAdmin.save();
       }
-      await mainAdmin.save();
     }
 
     return res.status(200).json({
