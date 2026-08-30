@@ -49,11 +49,11 @@ const getRateLimitConfig = () => {
 
     // Public Endpoint Config (Moderate limits)
     publicWindowMs: parseInt(process.env.RATE_LIMIT_PUBLIC_WINDOW_MS || (15 * 60 * 1000).toString(), 10),
-    publicMaxRequests: parseInt(process.env.RATE_LIMIT_PUBLIC_MAX_REQUESTS || '100', 10),
+    publicMaxRequests: parseInt(process.env.RATE_LIMIT_PUBLIC_MAX_REQUESTS || '2000', 10),
 
     // Authenticated Actions Config (Looser limits)
     authedWindowMs: parseInt(process.env.RATE_LIMIT_AUTHED_WINDOW_MS || (15 * 60 * 1000).toString(), 10),
-    authedMaxRequests: parseInt(process.env.RATE_LIMIT_AUTHED_MAX_REQUESTS || '300', 10),
+    authedMaxRequests: parseInt(process.env.RATE_LIMIT_AUTHED_MAX_REQUESTS || '5000', 10),
   };
 };
 
