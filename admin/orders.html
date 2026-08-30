@@ -103,9 +103,9 @@
             <h4 style="font-size:0.85rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Delivery Address</h4>
             <p id="modal-cust-address" style="font-weight:600;"></p>
           </div>
-          <div style="display: none;">
-            <h4 style="font-size:0.85rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Email Address</h4>
-            <p id="modal-cust-email" style="font-weight:600;"></p>
+          <div>
+            <h4 style="font-size:0.85rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Email Address (Optional)</h4>
+            <input type="email" id="modal-cust-email" style="width:100%; padding:8px 10px; border:1px solid var(--border-admin); border-radius:4px; font-weight:600; background-color:white;">
           </div>
           <div class="full-width" style="grid-column: 1/-1; display: none;" id="modal-notes-box">
             <h4 style="font-size:0.85rem; text-transform:uppercase; color:var(--text-muted); margin-bottom:5px;">Order Notes</h4>
@@ -145,6 +145,14 @@
               </select>
               <button class="btn btn-primary btn-sm" id="btn-save-order-changes">Save Changes</button>
             </div>
+          </div>
+
+          <div style="border-top:1px solid var(--border-admin); padding-top:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <strong style="display:block; font-size:0.9rem; color:var(--primary-color);"><i class="fa-solid fa-envelope"></i> Email Notification</strong>
+              <span style="font-size:0.75rem; color:var(--text-muted);">Send current payment details and order summary to customer.</span>
+            </div>
+            <button class="btn btn-outline btn-sm" id="btn-send-payment-email" style="display: flex; align-items: center; gap: 6px;"><i class="fa-solid fa-paper-plane"></i> Send Payment Email</button>
           </div>
 
           <div style="border-top:1px solid var(--border-admin); padding-top:12px; display:flex; justify-content:space-between; align-items:center; flex-wrap: wrap; gap: 10px;">

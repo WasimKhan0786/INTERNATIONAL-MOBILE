@@ -13,6 +13,7 @@ router.get('/', protect, authedLimiter, orderController.getAllOrders);
 router.get('/:id', publicLimiter, validateParamId, orderController.getOrderById);
 router.put('/:id/status', protect, authedLimiter, validateParamId, validateOrderStatusInput, orderController.updateOrderStatus);
 router.put('/:id', protect, authedLimiter, validateParamId, validateOrderUpdateInput, orderController.updateOrderDetails);
+router.post('/:id/send-payment-email', protect, authedLimiter, validateParamId, orderController.sendPaymentEmail);
 router.delete('/:id', protect, authedLimiter, validateParamId, orderController.deleteOrder);
 
 module.exports = router;

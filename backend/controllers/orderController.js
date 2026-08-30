@@ -234,7 +234,7 @@ exports.updateOrderDetails = async (req, res) => {
   try {
     const mongoose = require('mongoose');
     const { id } = req.params;
-    const { customerName, shopName, mobile } = req.body;
+    const { customerName, shopName, mobile, email } = req.body;
 
     const query = mongoose.Types.ObjectId.isValid(id) ? { _id: id } : { orderNumber: id };
     const order = await Order.findOne(query);
@@ -249,6 +249,7 @@ exports.updateOrderDetails = async (req, res) => {
     if (customerName !== undefined) order.customerName = customerName;
     if (shopName !== undefined) order.shopName = shopName;
     if (mobile !== undefined) order.mobile = mobile;
+    if (email !== undefined) order.email = email;
 
     await order.save();
 
@@ -301,6 +302,39 @@ exports.deleteOrder = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error deleting order'
+    });
+  }
+};
+
+exports.sendPaymentEmail = async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const { id } = req.params;
+    const { email } = req.body;
+
+    const query = mongoose.Types.ObjectId.isValid(id) ? { _id: id } : { orderNumber: id };
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    const { sendPaymentRequestEmail } = require('../services/mailService');
+    const mailResult = await sendPaymentRequestEmail(order, email);
+
+    return res.status(200).json({
+      success: true,
+      message: mailResult.message,
+      dryRun: mailResult.dryRun
+    });
+  } catch (err) {
+    console.error("Error sending order email:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Server error sending email'
     });
   }
 };

@@ -52,6 +52,11 @@ async function initializeOrdersPage() {
     saveChangesBtn.addEventListener('click', handleSaveOrderChanges);
   }
 
+  const sendEmailBtn = document.getElementById('btn-send-payment-email');
+  if (sendEmailBtn) {
+    sendEmailBtn.addEventListener('click', handleSendPaymentEmail);
+  }
+
   const deleteBtn = document.getElementById('btn-delete-order-action');
   if (deleteBtn) {
     deleteBtn.addEventListener('click', handleDeleteOrder);
@@ -157,7 +162,7 @@ function openOrderModal(order) {
   document.getElementById('modal-cust-name').value = order.customerName || '';
   document.getElementById('modal-cust-shop').value = order.shopName || '';
   document.getElementById('modal-cust-mobile').value = order.mobile || '';
-  document.getElementById('modal-cust-email').textContent = order.email || 'N/A';
+  document.getElementById('modal-cust-email').value = order.email || '';
   document.getElementById('modal-cust-address').textContent = `${order.address || 'N/A'}, ${order.city || 'N/A'}, ${order.state || 'N/A'} - ${order.pincode || 'N/A'}`;
 
   const dateStr = new Date(order.createdAt).toLocaleString('en-IN', {
@@ -218,6 +223,7 @@ async function handleSaveOrderChanges() {
   const name = document.getElementById('modal-cust-name').value.trim();
   const shop = document.getElementById('modal-cust-shop').value.trim();
   const mobile = document.getElementById('modal-cust-mobile').value.trim();
+  const email = document.getElementById('modal-cust-email') ? document.getElementById('modal-cust-email').value.trim() : '';
 
   if (!name || !shop || !mobile) {
     window.showToast("Name, Shop Name, and Mobile Number are required.", "error");
@@ -230,11 +236,12 @@ async function handleSaveOrderChanges() {
       await window.api.orders.updateStatus(selectedOrder.id, newStatus);
     }
 
-    // 2. Update Customer Details (Rename/Shop/Mobile)
+    // 2. Update Customer Details (Rename/Shop/Mobile/Email)
     await window.api.orders.updateDetails(selectedOrder.id, {
       customerName: name,
       shopName: shop,
-      mobile: mobile
+      mobile: mobile,
+      email: email
     });
 
     window.showToast("Order changes saved successfully.", "success");
@@ -324,4 +331,37 @@ function exportOrdersToCSV() {
   link.click();
   document.body.removeChild(link);
   window.showToast("Orders database exported successfully!", "success");
+}
+
+async function handleSendPaymentEmail() {
+  if (!selectedOrder) return;
+
+  const emailInput = document.getElementById('modal-cust-email');
+  const emailVal = emailInput ? emailInput.value.trim() : '';
+
+  if (!emailVal) {
+    window.showToast("Please provide a valid customer email address to send the payment details.", "error");
+    return;
+  }
+
+  const sendEmailBtn = document.getElementById('btn-send-payment-email');
+  const originalHtml = sendEmailBtn.innerHTML;
+
+  sendEmailBtn.disabled = true;
+  sendEmailBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+
+  try {
+    const res = await window.api.orders.sendPaymentEmail(selectedOrder.id, emailVal);
+    if (res.dryRun) {
+      window.showToast("Dry-Run: Email logged to server console (SMTP unconfigured).", "info");
+    } else {
+      window.showToast("Payment request email successfully sent to customer!", "success");
+    }
+  } catch (err) {
+    console.error(err);
+    window.showToast(err.message || "Failed to send email notification", "error");
+  } finally {
+    sendEmailBtn.disabled = false;
+    sendEmailBtn.innerHTML = originalHtml;
+  }
 }

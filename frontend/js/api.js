@@ -371,6 +371,20 @@ const api = {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Error deleting order.');
       return data;
+    },
+
+    sendPaymentEmail: async (id, email) => {
+      const res = await fetch(`${BASE_URL}/orders/${id}/send-payment-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Error sending payment email.');
+      return data;
     }
   },
 

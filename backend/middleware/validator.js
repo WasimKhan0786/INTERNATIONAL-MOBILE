@@ -532,6 +532,13 @@ const validateOrderUpdateInput = (req, res, next) => {
     }
   }
 
+  // Email (Optional)
+  if (body.email !== undefined && body.email !== null && body.email !== '') {
+    if (!isString(body.email) || !EMAIL_REGEX.test(body.email.trim())) {
+      errors.push('Customer email format is invalid.');
+    }
+  }
+
   if (errors.length > 0) {
     return sendValidationError(res, errors);
   }

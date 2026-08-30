@@ -177,6 +177,7 @@ async function handlePlaceOrder(e) {
   const name = document.getElementById('cust-name').value.trim();
   const shopName = document.getElementById('cust-shop-name').value.trim();
   const mobile = document.getElementById('cust-mobile').value.trim();
+  const emailVal = document.getElementById('cust-email') ? document.getElementById('cust-email').value.trim() : '';
 
   const cartItems = window.cart.get();
 
@@ -184,7 +185,7 @@ async function handlePlaceOrder(e) {
     customerName: name,
     shopName: shopName,
     mobile: mobile,
-    email: '',
+    email: emailVal,
     products: cartItems,
     subtotal: subtotalVal,
     deliveryCharge: deliveryVal,
