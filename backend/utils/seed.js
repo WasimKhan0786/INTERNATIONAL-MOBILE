@@ -15,8 +15,8 @@ dotenv.config();
 const DEFAULT_SETTINGS = {
   shopName: "INTERNATIONAL MOBILE",
   tagline: "सभी प्रकार के मोबाइल एवं एक्सेसरीज के थोक विक्रेता",
-  logo: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80",
-  favicon: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=32&auto=format&fit=crop&q=80",
+  logo: "images/logo.png",
+  favicon: "images/favicon.png",
   phone: "7654085663, 8789380072",
   whatsapp: "7654085663",
   email: "info@internationalmobile.com",
