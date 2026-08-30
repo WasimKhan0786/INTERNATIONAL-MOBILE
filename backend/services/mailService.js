@@ -26,6 +26,52 @@ const getTransporter = () => {
 };
 
 /**
+ * Helper to construct status badges with corresponding styling
+ */
+const getStatusBadgeHtml = (status) => {
+  const normStatus = (status || 'Pending').trim().toLowerCase();
+  let bgColor = '#fffae6';
+  let textColor = '#b7791f';
+  let label = 'PENDING';
+
+  switch (normStatus) {
+    case 'delivered':
+      bgColor = '#e6f4ea';
+      textColor = '#137333';
+      label = 'DELIVERED';
+      break;
+    case 'cancelled':
+      bgColor = '#fce8e6';
+      textColor = '#c5221f';
+      label = 'CANCELLED';
+      break;
+    case 'confirmed':
+      bgColor = '#e8f0fe';
+      textColor = '#1a73e8';
+      label = 'CONFIRMED';
+      break;
+    case 'processing':
+      bgColor = '#e0f2fe';
+      textColor = '#0369a1';
+      label = 'PROCESSING';
+      break;
+    case 'shipped':
+      bgColor = '#f3e8ff';
+      textColor = '#6b21a8';
+      label = 'SHIPPED';
+      break;
+    case 'pending':
+    default:
+      bgColor = '#fffae6';
+      textColor = '#b7791f';
+      label = 'PENDING';
+      break;
+  }
+
+  return `<span style="background-color: ${bgColor}; color: ${textColor}; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem; text-transform: uppercase;">${label}</span>`;
+};
+
+/**
  * Generate a beautifully formatted HTML template for order payment notifications
  */
 const generatePaymentRequestTemplate = (order) => {
@@ -65,7 +111,7 @@ const generatePaymentRequestTemplate = (order) => {
           <div style="margin-bottom: 20px;">
             <p style="font-size: 1rem; color: #2d3748; margin: 0 0 10px 0;">Dear <strong>${order.customerName}</strong>,</p>
             <p style="font-size: 0.9rem; color: #4a5568; line-height: 1.5; margin: 0;">
-              Thank you for ordering with us. Your order from <strong>${order.shopName}</strong> is currently in <span style="background-color: #fffae6; color: #b7791f; padding: 3px 8px; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">PENDING</span> status.
+              Thank you for ordering with us. Your order from <strong>${order.shopName}</strong> is currently in ${getStatusBadgeHtml(order.status)} status.
             </p>
           </div>
 
