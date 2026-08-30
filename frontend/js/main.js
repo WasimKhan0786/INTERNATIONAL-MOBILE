@@ -107,7 +107,11 @@ function initSpinWheelGame(settings) {
 
   if (!floatBtn || !modal || !canvas) return;
 
-  if (settings && settings.spinWheelActive) {
+  const campaignTime = settings ? settings.updatedAt : '';
+  const usedCampaignTime = localStorage.getItem('techzone_coupon_used_campaign_time');
+  const hasUsedForThisCampaign = (usedCampaignTime === campaignTime);
+
+  if (settings && settings.spinWheelActive && !hasUsedForThisCampaign) {
     floatBtn.style.display = 'flex';
 
     const titleEl = document.getElementById('spin-game-title');
@@ -535,18 +539,56 @@ async function initCategories() {
       return;
     }
 
-    categories.forEach(cat => {
-      const card = document.createElement('a');
-      card.href = `category.html?slug=${cat.slug}`;
-      card.className = 'category-card';
-      card.innerHTML = `
-        <div class="category-icon-wrapper">
-          <img src="${cat.image}" alt="${cat.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80'">
-        </div>
-        <h3>${cat.name}</h3>
-      `;
-      grid.appendChild(card);
-    });
+    let showingAll = false;
+
+    const renderGrid = (list) => {
+      grid.innerHTML = '';
+      list.forEach(cat => {
+        const card = document.createElement('a');
+        card.href = `category.html?slug=${cat.slug}`;
+        card.className = 'category-card';
+        card.innerHTML = `
+          <div class="category-icon-wrapper">
+            <img src="${cat.image}" alt="${cat.name}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80'">
+          </div>
+          <h3>${cat.name}</h3>
+        `;
+        grid.appendChild(card);
+      });
+    };
+
+    if (categories.length <= 6) {
+      renderGrid(categories);
+    } else {
+      // Render first 6 by default
+      renderGrid(categories.slice(0, 6));
+
+      // Append See All button container dynamically if it doesn't exist
+      let btnContainer = document.getElementById('btn-see-all-categories-container');
+      if (!btnContainer) {
+        btnContainer = document.createElement('div');
+        btnContainer.id = 'btn-see-all-categories-container';
+        btnContainer.style.cssText = 'text-align: center; margin-top: 30px; width: 100%; grid-column: 1 / -1;';
+        btnContainer.innerHTML = `
+          <button type="button" class="btn btn-outline" id="btn-see-all-categories" style="padding: 10px 24px; font-weight: 700;">See All Categories</button>
+        `;
+        grid.parentNode.appendChild(btnContainer);
+      }
+
+      const seeAllBtn = document.getElementById('btn-see-all-categories');
+      if (seeAllBtn) {
+        seeAllBtn.addEventListener('click', () => {
+          showingAll = !showingAll;
+          if (showingAll) {
+            renderGrid(categories);
+            seeAllBtn.textContent = 'Show Less';
+          } else {
+            renderGrid(categories.slice(0, 6));
+            seeAllBtn.textContent = 'See All Categories';
+          }
+        });
+      }
+    }
   } catch (err) {
     console.error("Failed to load categories", err);
     grid.innerHTML = `<div class="empty-state">Failed to load categories</div>`;
@@ -707,11 +749,12 @@ async function initReviews() {
     container.innerHTML = '';
     
     if (reviews.length === 0) {
-      container.innerHTML = `<p style="text-align: center; color: var(--text-muted); grid-column: 1/-1;">No reviews posted yet.</p>`;
+      container.innerHTML = `<p style="text-align: center; color: var(--text-muted); width: 100%;">No reviews posted yet.</p>`;
       return;
     }
 
-    reviews.slice(0, 3).forEach(rev => {
+    // Render all reviews in the slider track
+    reviews.forEach(rev => {
       let starsHtml = '';
       for (let i = 1; i <= 5; i++) {
         starsHtml += i <= rev.rating ? `<i class="fa-solid fa-star"></i>` : `<i class="fa-regular fa-star"></i>`;
@@ -721,14 +764,47 @@ async function initReviews() {
       card.className = 'review-card';
       card.innerHTML = `
         <div class="review-header">
-          <span class="reviewer-name">${rev.name}</span>
+          <span class="reviewer-name">${rev.customerName || rev.name || 'Verified Buyer'}</span>
           <span class="stars-rating" style="font-size: 0.8rem;">${starsHtml}</span>
         </div>
         <p class="review-comment">"${rev.comment}"</p>
-        <div class="review-date">${rev.date}</div>
+        <div class="review-date">${rev.date || new Date(rev.createdAt || Date.now()).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
       `;
       container.appendChild(card);
     });
+
+    // Auto-scroll loop logic for slider (every 3 seconds)
+    let currentIndex = 0;
+    const cards = container.querySelectorAll('.review-card');
+    if (cards.length <= 1) return; // No need to slide if only 1 review exists
+
+    const slideReviews = () => {
+      const isMobile = window.innerWidth < 768;
+      const cardsToShow = isMobile ? 1 : 2;
+      const maxIndex = cards.length - cardsToShow;
+
+      if (currentIndex >= maxIndex) {
+        currentIndex = 0; // Reset loop to start
+      } else {
+        currentIndex++;
+      }
+
+      // Calculate translate dimensions based on mobile/desktop display columns and gap sizes
+      const percentage = isMobile ? (currentIndex * 100) : (currentIndex * 50);
+      const gapOffset = isMobile ? (currentIndex * 20) : (currentIndex * 10);
+      container.style.transform = `translateX(calc(-${percentage}% - ${gapOffset}px))`;
+    };
+
+    let autoSlideInterval = setInterval(slideReviews, 3000);
+
+    // Pause auto-sliding on hover for enhanced user reading accessibility
+    container.addEventListener('mouseenter', () => {
+      clearInterval(autoSlideInterval);
+    });
+    container.addEventListener('mouseleave', () => {
+      autoSlideInterval = setInterval(slideReviews, 3000);
+    });
+
   } catch (err) {
     console.error("Failed to load reviews", err);
   }

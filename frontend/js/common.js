@@ -368,12 +368,14 @@ async function renderHeader(settings) {
         <li class="dropdown">
           <a href="#" class="nav-link">Shop by Category <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; margin-left: 4px;"></i></a>
           <ul class="dropdown-menu">
-            ${categories.map(cat => `<li><a href="category.html?slug=${cat.slug}">${cat.name}</a></li>`).join('')}
+            ${categories.slice(0, 6).map(cat => `<li><a href="category.html?slug=${cat.slug}">${cat.name}</a></li>`).join('')}
+            ${categories.length > 6 ? `<li><a href="shop.html" style="font-weight: 700; border-top: 1px solid var(--border-color); color: var(--primary-color);">See All Categories...</a></li>` : ''}
           </ul>
         </li>
         <li><a href="shop.html" class="nav-link ${isPageActive('shop.html') && !window.location.search.includes('category=accessories') ? 'active' : ''}">Products</a></li>
         <li><a href="about.html" class="nav-link ${isPageActive('about.html') ? 'active' : ''}">About Us</a></li>
         <li><a href="contact.html" class="nav-link ${isPageActive('contact.html') ? 'active' : ''}">Contact Us</a></li>
+        <li><a href="../admin" class="nav-link" target="_blank"><i class="fa-solid fa-user-lock" style="margin-right: 5px; color: var(--primary-color);"></i>Admin Panel</a></li>
       </ul>
 
       <!-- Actions -->
@@ -432,12 +434,14 @@ async function renderHeader(settings) {
       <li class="mobile-dropdown">
         <a href="#" class="mobile-nav-link" id="mobile-categories-toggle" style="display: flex; justify-content: space-between; align-items: center;">Shop by Category <i class="fa-solid fa-chevron-down" style="font-size: 0.8rem;"></i></a>
         <ul class="mobile-submenu" id="mobile-categories-submenu" style="display: none; padding-left: 15px; margin-top: 5px; list-style: none;">
-          ${categories.map(cat => `<li><a href="category.html?slug=${cat.slug}">${cat.name}</a></li>`).join('')}
+          ${categories.slice(0, 6).map(cat => `<li><a href="category.html?slug=${cat.slug}">${cat.name}</a></li>`).join('')}
+          ${categories.length > 6 ? `<li><a href="shop.html" style="font-weight: 700; color: var(--primary-color);">See All Categories...</a></li>` : ''}
         </ul>
       </li>
       <li><a href="shop.html" class="mobile-nav-link ${isPageActive('shop.html') && !window.location.search.includes('category=accessories') ? 'active' : ''}">Products</a></li>
       <li><a href="about.html" class="mobile-nav-link ${isPageActive('about.html') ? 'active' : ''}">About Us</a></li>
       <li><a href="contact.html" class="mobile-nav-link ${isPageActive('contact.html') ? 'active' : ''}">Contact Us</a></li>
+      <li><a href="../admin" class="mobile-nav-link" target="_blank"><i class="fa-solid fa-user-lock" style="margin-right: 6px; color: var(--primary-color);"></i>Admin Panel</a></li>
     </ul>
   `;
 

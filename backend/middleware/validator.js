@@ -498,6 +498,47 @@ const validateReviewInput = (req, res, next) => {
  * 10. Route Param ID Schema Validator
  * --------------------------------------------------------------------------
  */
+/**
+ * --------------------------------------------------------------------------
+ * 11. Order Details Update Schema Validator (Admin Side)
+ * --------------------------------------------------------------------------
+ */
+const validateOrderUpdateInput = (req, res, next) => {
+  const body = req.body || {};
+  const errors = [];
+
+  // Customer Name
+  if (body.customerName !== undefined) {
+    if (!isString(body.customerName) || body.customerName.trim() === '') {
+      errors.push('Customer name cannot be empty.');
+    } else if (body.customerName.trim().length < 2 || body.customerName.trim().length > 100) {
+      errors.push('Customer name must be between 2 and 100 characters.');
+    }
+  }
+
+  // Shop Name (Optional)
+  if (body.shopName !== undefined && body.shopName !== null && body.shopName !== '') {
+    if (!isString(body.shopName) || body.shopName.trim().length > 150) {
+      errors.push('Shop name cannot exceed 150 characters.');
+    }
+  }
+
+  // Mobile
+  if (body.mobile !== undefined) {
+    if (!isString(body.mobile) || body.mobile.trim() === '') {
+      errors.push('Mobile contact number cannot be empty.');
+    } else if (!PHONE_REGEX.test(body.mobile.trim())) {
+      errors.push('Mobile contact number format is invalid (10-15 digits).');
+    }
+  }
+
+  if (errors.length > 0) {
+    return sendValidationError(res, errors);
+  }
+
+  next();
+};
+
 const validateParamId = (req, res, next) => {
   const { id } = req.params || {};
   if (id && isString(id) && id.trim() !== '') {
@@ -519,6 +560,7 @@ module.exports = {
   validateBulkProductInput,
   validateCategoryInput,
   validateOrderInput,
+  validateOrderUpdateInput,
   validateOrderStatusInput,
   validateBannerInput,
   validateSettingsInput,

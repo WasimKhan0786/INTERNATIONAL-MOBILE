@@ -4,16 +4,43 @@ window.isUpdatingCartLocally = false;
 let cartDiscountVal = 0;
 let cartAppliedCouponCode = '';
 
-document.addEventListener('DOMContentLoaded', () => {
-  // Check if user won spin coupon
-  const savedSpin = localStorage.getItem('techzone_spin_result');
-  if (savedSpin) {
-    try {
-      const parsed = JSON.parse(savedSpin);
-      if (parsed.winningSlice && parsed.winningSlice.isWin && parsed.winningSlice.code) {
-        cartAppliedCouponCode = parsed.winningSlice.code;
-      }
-    } catch (e) {}
+document.addEventListener('DOMContentLoaded', async () => {
+  // Check if coupon is enabled and not used yet
+  let settings = null;
+  let isCouponOptionActive = false;
+  try {
+    settings = await window.api.settings.get();
+    const campaignTime = settings.updatedAt;
+    const usedCampaignTime = localStorage.getItem('techzone_coupon_used_campaign_time');
+    const hasUsedForThisCampaign = (usedCampaignTime === campaignTime);
+    isCouponOptionActive = settings.spinWheelActive && !hasUsedForThisCampaign;
+    
+    // Clear spin result if campaign has been used
+    if (hasUsedForThisCampaign) {
+      localStorage.removeItem('techzone_spin_result');
+    }
+  } catch (e) {
+    console.error("Failed to load settings in cart:", e);
+  }
+
+  const couponSection = document.getElementById('cart-coupon-section');
+  if (couponSection) {
+    couponSection.style.display = isCouponOptionActive ? 'block' : 'none';
+  }
+
+  if (isCouponOptionActive) {
+    // Check if user won spin coupon
+    const savedSpin = localStorage.getItem('techzone_spin_result');
+    if (savedSpin) {
+      try {
+        const parsed = JSON.parse(savedSpin);
+        if (parsed.winningSlice && parsed.winningSlice.isWin && parsed.winningSlice.code) {
+          cartAppliedCouponCode = parsed.winningSlice.code;
+        }
+      } catch (e) {}
+    }
+  } else {
+    cartAppliedCouponCode = '';
   }
 
   const couponInput = document.getElementById('cart-coupon-input');

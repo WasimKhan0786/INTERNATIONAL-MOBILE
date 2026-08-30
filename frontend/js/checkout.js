@@ -17,15 +17,41 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Render items summary
   await renderCheckoutSummary(items);
 
-  // Check if customer won a coupon from Spin the Wheel
-  const savedSpin = localStorage.getItem('techzone_spin_result');
-  if (savedSpin) {
-    try {
-      const parsed = JSON.parse(savedSpin);
-      if (parsed.winningSlice && parsed.winningSlice.isWin && parsed.winningSlice.code) {
-        appliedCouponCode = parsed.winningSlice.code;
-      }
-    } catch (e) {}
+  // Check if coupon is enabled and not used yet
+  let settings = null;
+  let isCouponOptionActive = false;
+  try {
+    settings = await window.api.settings.get();
+    const campaignTime = settings.updatedAt;
+    const usedCampaignTime = localStorage.getItem('techzone_coupon_used_campaign_time');
+    const hasUsedForThisCampaign = (usedCampaignTime === campaignTime);
+    isCouponOptionActive = settings.spinWheelActive && !hasUsedForThisCampaign;
+    
+    if (hasUsedForThisCampaign) {
+      localStorage.removeItem('techzone_spin_result');
+    }
+  } catch (e) {
+    console.error("Failed to load settings in checkout:", e);
+  }
+
+  const couponSection = document.getElementById('checkout-coupon-section');
+  if (couponSection) {
+    couponSection.style.display = isCouponOptionActive ? 'block' : 'none';
+  }
+
+  if (isCouponOptionActive) {
+    // Check if customer won a coupon from Spin the Wheel
+    const savedSpin = localStorage.getItem('techzone_spin_result');
+    if (savedSpin) {
+      try {
+        const parsed = JSON.parse(savedSpin);
+        if (parsed.winningSlice && parsed.winningSlice.isWin && parsed.winningSlice.code) {
+          appliedCouponCode = parsed.winningSlice.code;
+        }
+      } catch (e) {}
+    }
+  } else {
+    appliedCouponCode = '';
   }
 
   const couponInput = document.getElementById('checkout-coupon-input');
@@ -244,6 +270,12 @@ Please confirm my order and let me know the estimated delivery time. Thank you! 
     } else {
       window.open(whatsappUrl, '_blank');
     }
+
+    // Save that coupon has been used for this campaign
+    if (settings && settings.updatedAt) {
+      localStorage.setItem('techzone_coupon_used_campaign_time', settings.updatedAt);
+    }
+    localStorage.removeItem('techzone_spin_result');
 
     // Clear Shopping Cart cache
     window.cart.clear();

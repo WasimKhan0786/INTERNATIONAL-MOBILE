@@ -917,11 +917,32 @@ header.scrolled {
 @media(max-width: 991px) {
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
   }
 }
 @media(max-width: 480px) {
   .features-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr); /* 2x2 grid layout on mobile */
+    gap: 12px; /* Reduced gap on mobile */
+  }
+  
+  .feature-box {
+    padding: 20px 12px !important; /* Reduced padding on mobile */
+  }
+  
+  .feature-icon {
+    font-size: 1.6rem !important; /* Smaller icon size */
+    margin-bottom: 10px !important;
+  }
+  
+  .feature-box h3 {
+    font-size: 0.88rem !important; /* Smaller text size for grid */
+    margin-bottom: 6px !important;
+  }
+  
+  .feature-box p {
+    font-size: 0.73rem !important; /* Smaller body text for grid */
+    line-height: 1.35 !important;
   }
 }
 

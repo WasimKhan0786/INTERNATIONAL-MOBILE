@@ -11,10 +11,10 @@ let activeFilters = {
   sort: 'newest'
 };
 
-// Infinite Scroll state variables
+// Infinite Scroll state variables (Increased batch size to 24 for instant parallel loading)
 let allProducts = [];
 let renderedCount = 0;
-const BATCH_SIZE = 8;
+const BATCH_SIZE = 16;
 let isFetching = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -457,10 +457,27 @@ window.addEventListener('scroll', () => {
   if (position >= height - threshold) {
     isFetching = true;
     
-    // Simulate loading delay for smooth visual display of the loading progress arrow icon
+    // Append 4 animated loading skeleton cards to the grid container as a loading template
+    const grid = document.getElementById('shop-products-grid');
+    let skeletonWrapper = document.getElementById('scroll-skeletons-wrapper');
+    
+    if (grid && !skeletonWrapper) {
+      skeletonWrapper = document.createElement('div');
+      skeletonWrapper.id = 'scroll-skeletons-wrapper';
+      skeletonWrapper.style.display = 'contents'; // Allows skeleton cards to align perfectly in the CSS Grid columns
+      skeletonWrapper.innerHTML = Array(4).fill(0).map(() => `
+        <div class="skeleton-card" style="height: 320px; border-radius: var(--border-radius-md); background: var(--bg-light); border: 1px solid var(--border-color); animation: pulse 1.5s infinite ease-in-out;"></div>
+      `).join('');
+      grid.appendChild(skeletonWrapper);
+    }
+
+    // Keep the skeleton template visible for 600ms so customer feels the smooth loading process, then render actual items
     setTimeout(() => {
+      const wrapper = document.getElementById('scroll-skeletons-wrapper');
+      if (wrapper) wrapper.remove();
+      
       renderNextBatch();
       isFetching = false;
-    }, 800);
+    }, 600);
   }
 });
