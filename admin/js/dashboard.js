@@ -310,8 +310,8 @@ function openModelDetailsModal(modelName, orders) {
       const itemModel = extractPhoneModel(item.name || '');
       if (itemModel === modelName) {
         const qty = item.quantity || 1;
-        const price = item.price || 0;
-        const subtotal = price * qty;
+        const unitPrice = (item.pricePerPiece && Number(item.pricePerPiece) > 0) ? Number(item.pricePerPiece) : (item.price || 0);
+        const subtotal = unitPrice * qty;
 
         totalUnits += qty;
         totalRevenue += subtotal;

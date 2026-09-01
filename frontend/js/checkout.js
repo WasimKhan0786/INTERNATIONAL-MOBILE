@@ -154,7 +154,7 @@ async function renderCheckoutSummary(items) {
     div.innerHTML = `
       <span style="flex-grow: 1; padding-right: 20px;">
         <strong>${item.name}</strong> 
-        <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">Brand: ${item.brand} | Qty: ${item.quantity}</span>
+        <span style="color: var(--text-muted); font-size: 0.8rem; display: block;">Brand: ${item.brand} | Qty: ${item.quantity} (₹${item.price}/pc)</span>
       </span>
       <span style="font-weight: 600;">₹${item.price * item.quantity}</span>
     `;
@@ -221,7 +221,7 @@ async function handlePlaceOrder(e) {
     const settings = await window.api.settings.get();
     
     // Build WhatsApp Confirmation Message
-    const itemsText = order.products.map((p, idx) => `${idx + 1}. *${p.name}* (Brand: ${p.brand || 'N/A'}) \n   Qty: ${p.quantity} | Price: ₹${p.price * p.quantity}`).join('\n\n');
+    const itemsText = order.products.map((p, idx) => `${idx + 1}. *${p.name}* (Brand: ${p.brand || 'N/A'}) \n   Qty: ${p.quantity} Pcs | Unit Price: ₹${p.price} | Subtotal: ₹${p.price * p.quantity}`).join('\n\n');
     
     const dateStr = new Date(order.createdAt).toLocaleDateString('en-IN', {
       day: 'numeric',

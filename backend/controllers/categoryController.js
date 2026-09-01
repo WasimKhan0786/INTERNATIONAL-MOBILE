@@ -26,11 +26,26 @@ exports.createCategory = async (req, res) => {
   try {
     const { name, slug, description, status, order } = req.body;
 
-    const slugExists = await Category.findOne({ slug: slug.toLowerCase() });
+    // Generate slug automatically from name if not provided
+    const catSlug = (slug || name || '')
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+
+    if (!catSlug) {
+      return res.status(400).json({
+        success: false,
+        message: 'Category name or slug is required.'
+      });
+    }
+
+    const slugExists = await Category.findOne({ slug: catSlug });
     if (slugExists) {
       return res.status(400).json({
         success: false,
-        message: `Category with slug '${slug}' already exists.`
+        message: `Category with slug '${catSlug}' already exists.`
       });
     }
 
@@ -53,7 +68,7 @@ exports.createCategory = async (req, res) => {
 
     const newCategory = new Category({
       name,
-      slug: slug.toLowerCase(),
+      slug: catSlug,
       image: imageUrl,
       description: description || '',
       status: status || 'active',
@@ -91,13 +106,17 @@ exports.updateCategory = async (req, res) => {
 
     const { name, slug, description, status, order, image } = req.body;
 
-    if (slug && slug !== category.slug) {
-      const slugCollision = await Category.findOne({ slug: slug.toLowerCase() });
-      if (slugCollision) {
-        return res.status(400).json({
-          success: false,
-          message: `Category with slug '${slug}' already exists.`
-        });
+    if (slug) {
+      const formattedSlug = slug.toString().toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      if (formattedSlug !== category.slug) {
+        const slugCollision = await Category.findOne({ slug: formattedSlug });
+        if (slugCollision) {
+          return res.status(400).json({
+            success: false,
+            message: `Category with slug '${formattedSlug}' already exists.`
+          });
+        }
+        category.slug = formattedSlug;
       }
     }
 
@@ -118,7 +137,6 @@ exports.updateCategory = async (req, res) => {
     }
 
     category.name = name || category.name;
-    category.slug = slug ? slug.toLowerCase() : category.slug;
     category.image = imageUrl;
     category.description = description !== undefined ? description : category.description;
     category.status = status || category.status;

@@ -218,8 +218,8 @@ async function handleFormSubmit(e) {
   const brand = document.getElementById('prod-brand').value.trim();
   const sku = document.getElementById('prod-sku').value.trim();
   const categorySlug = document.getElementById('prod-category').value;
-  const stock = parseInt(document.getElementById('prod-stock').value);
-  const price = parseFloat(document.getElementById('prod-price').value);
+  const priceIn = document.getElementById('prod-price').value;
+  const price = priceIn !== '' ? parseFloat(priceIn) : 0;
   
   const discountIn = document.getElementById('prod-discount-price').value;
   const discountPrice = discountIn ? parseFloat(discountIn) : null;

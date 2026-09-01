@@ -111,10 +111,10 @@ const validateProductInput = (isUpdate = false) => {
       }
     }
 
-    // Price
-    if (!isUpdate || body.price !== undefined) {
+    // Price (Optional)
+    if (body.price !== undefined && body.price !== null && body.price !== '') {
       if (!isNumeric(body.price)) {
-        errors.push('Original price is required and must be a valid number.');
+        errors.push('Original price must be a valid number.');
       } else {
         const numPrice = Number(body.price);
         if (numPrice < 0 || numPrice > 10000000) {

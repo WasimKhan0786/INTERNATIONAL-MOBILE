@@ -151,7 +151,7 @@ async function renderCart() {
       <div class="cart-item-details">
         <div class="cart-item-brand">${item.brand}</div>
         <div class="cart-item-title">${item.name}</div>
-        <div class="cart-item-price">₹${item.price}</div>
+        <div class="cart-item-price">₹${item.price}${item.pricePerPiece ? ' / pc' : ''}</div>
       </div>
       <div class="cart-item-actions">
         <!-- Qty controls -->

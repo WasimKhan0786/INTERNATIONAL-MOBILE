@@ -86,6 +86,7 @@ exports.createOrder = async (req, res) => {
       name: p.name || 'Mobile Accessory',
       brand: p.brand || 'Generic',
       price: Number(p.price || 0),
+      pricePerPiece: p.pricePerPiece ? Number(p.pricePerPiece) : null,
       image: p.image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80',
       quantity: Number(p.quantity || 1),
       sku: p.sku || ''

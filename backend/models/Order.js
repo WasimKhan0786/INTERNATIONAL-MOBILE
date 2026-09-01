@@ -29,6 +29,10 @@ const OrderItemSchema = new mongoose.Schema({
   sku: {
     type: String,
     required: false
+  },
+  pricePerPiece: {
+    type: Number,
+    required: false
   }
 }, { _id: false });
 

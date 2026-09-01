@@ -371,10 +371,15 @@ function renderNextBatch() {
       }
     }
 
+    const displayUnitPrice = (prod.pricePerPiece && Number(prod.pricePerPiece) > 0)
+      ? prod.pricePerPiece
+      : (prod.discountPrice || prod.price);
+    const unitBadge = (prod.pricePerPiece && Number(prod.pricePerPiece) > 0) ? ' / pc' : '';
+
     const priceHtml = hasDiscount 
-      ? `<span class="product-discount-price">₹${prod.discountPrice}</span>
+      ? `<span class="product-discount-price">₹${displayUnitPrice}${unitBadge}</span>
          <span class="product-original-price">₹${prod.price}</span>`
-      : `<span class="product-discount-price">₹${prod.price}</span>`;
+      : `<span class="product-discount-price">₹${displayUnitPrice}${unitBadge}</span>`;
 
     card.innerHTML = `
       <div class="product-image-container">

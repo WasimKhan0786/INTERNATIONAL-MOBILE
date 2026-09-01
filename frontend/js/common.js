@@ -36,11 +36,15 @@ const cart = {
         window.showToast(`Only ${product.stock} units in stock.`, "error");
         return false;
       }
+      const unitPrice = (product.pricePerPiece && Number(product.pricePerPiece) > 0) 
+        ? Number(product.pricePerPiece) 
+        : Number(product.discountPrice || product.price);
       items.push({
         id: prodId,
         name: product.name,
         brand: product.brand || '',
-        price: product.discountPrice || product.price,
+        price: unitPrice,
+        pricePerPiece: product.pricePerPiece || null,
         image: product.images && product.images[0] ? (product.images[0].url || product.images[0]) : '',
         quantity: quantity,
         sku: product.sku || ''
@@ -624,10 +628,13 @@ function initSearchEvent() {
         products.slice(0, 5).forEach(product => {
           const item = document.createElement('div');
           item.className = 'suggestion-item';
+          const displayPrice = (product.pricePerPiece && Number(product.pricePerPiece) > 0) 
+            ? `₹${product.pricePerPiece} / pc` 
+            : `₹${product.discountPrice || product.price}`;
           item.innerHTML = `
             <img src="${product.images[0] ? (product.images[0].url || product.images[0]) : ''}" alt="${product.name}" class="suggestion-img">
             <div class="suggestion-name">${product.name}</div>
-            <div class="suggestion-price">₹${product.discountPrice || product.price}</div>
+            <div class="suggestion-price">${displayPrice}</div>
           `;
           item.addEventListener('click', () => {
             window.location.href = `product.html?id=${product.id}`;
@@ -1011,15 +1018,19 @@ window.openQuickViewModal = async function(productId) {
     const hasDiscount = product.discountPrice && product.discountPrice < product.price;
     const discountPct = hasDiscount ? Math.round(((product.price - product.discountPrice) / product.price) * 100) : 0;
 
-    const pricePerPieceHtml = (product.pricePerPiece && Number(product.pricePerPiece) > 0)
-      ? `<div style="font-size: 0.85rem; font-weight: 600; color: var(--text-dark); margin-top: 6px; background: var(--bg-light); padding: 3px 8px; border-radius: 4px; display: inline-block;">Price Per Piece: <strong style="color: var(--primary-color);">₹${product.pricePerPiece}</strong> / pc</div>`
+    const displayUnitPrice = (product.pricePerPiece && Number(product.pricePerPiece) > 0)
+      ? product.pricePerPiece
+      : (product.discountPrice || product.price);
+    const unitBadge = (product.pricePerPiece && Number(product.pricePerPiece) > 0) ? ' / pc' : '';
+    const packPriceHtml = (product.price && product.pricePerPiece)
+      ? `<div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-top: 4px;">Pack Price: ₹${product.price}</div>`
       : '';
 
-    const priceHtml = (hasDiscount 
-      ? `<span class="quick-discount-price" style="font-size: 1.4rem; color: var(--primary-color); font-weight: 700;">₹${product.discountPrice}</span>
-         <span class="quick-original-price" style="font-size: 1.1rem; color: var(--text-muted); text-decoration: line-through; margin-left: 10px;">₹${product.price}</span>
-         <span style="background-color: var(--success); color: white; padding: 2px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; margin-left: 10px;">${discountPct}% OFF</span>`
-      : `<span class="quick-discount-price" style="font-size: 1.4rem; color: var(--primary-color); font-weight: 700;">₹${product.price}</span>`) + pricePerPieceHtml;
+    const priceHtml = `
+      <span class="quick-discount-price" style="font-size: 1.4rem; color: var(--primary-color); font-weight: 700;">₹${displayUnitPrice}${unitBadge}</span>
+      ${hasDiscount ? `<span class="quick-original-price" style="font-size: 1.1rem; color: var(--text-muted); text-decoration: line-through; margin-left: 10px;">₹${product.price}</span> <span style="background-color: var(--success); color: white; padding: 2px 8px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; margin-left: 10px;">${discountPct}% OFF</span>` : ''}
+      ${packPriceHtml}
+    `;
 
     let variantsHtml = '';
     const specifications = product.specifications || [];

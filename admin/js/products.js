@@ -89,9 +89,17 @@ async function renderProductsTable() {
       const highlightsHtml = highlights.length > 0 ? highlights.join('<br>') : '<span style="color:var(--text-muted); font-size:0.8rem;">None</span>';
 
       // Price Formatting
-      const priceText = prod.discountPrice 
-        ? `<strong>₹${prod.discountPrice}</strong><br><span style="text-decoration:line-through; font-size:0.8rem; color:var(--text-muted);">₹${prod.price}</span>`
-        : `<strong>₹${prod.price}</strong>`;
+      const displayPerPiece = (prod.pricePerPiece && Number(prod.pricePerPiece) > 0)
+        ? `<strong>₹${prod.pricePerPiece} / pc</strong>`
+        : (prod.discountPrice 
+          ? `<strong>₹${prod.discountPrice}</strong>`
+          : `<strong>₹${prod.price}</strong>`);
+          
+      const packPriceSubtext = (prod.pricePerPiece && Number(prod.pricePerPiece) > 0)
+        ? `<br><span style="font-size:0.75rem; color:var(--text-muted);">Pack: ₹${prod.price}</span>`
+        : (prod.discountPrice ? `<br><span style="text-decoration:line-through; font-size:0.8rem; color:var(--text-muted);">₹${prod.price}</span>` : '');
+
+      const priceText = `${displayPerPiece}${packPriceSubtext}`;
 
       // Stock indicator
       let stockClass = 'admin-badge-success';

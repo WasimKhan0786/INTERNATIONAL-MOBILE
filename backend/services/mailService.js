@@ -14,6 +14,9 @@ const getTransporter = () => {
     return null;
   }
 
+  // Allow disabling strict TLS verification for self-signed certificates (defaults to false to bypass self-signed cert chain errors)
+  const rejectUnauthorized = process.env.SMTP_TLS_REJECT_UNAUTHORIZED === 'true';
+
   return nodemailer.createTransport({
     host,
     port,
@@ -21,7 +24,13 @@ const getTransporter = () => {
     auth: {
       user,
       pass
-    }
+    },
+    tls: {
+      rejectUnauthorized
+    },
+    connectionTimeout: 15000, // 15 seconds connection timeout
+    greetingTimeout: 15000,
+    socketTimeout: 20000
   });
 };
 

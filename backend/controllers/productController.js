@@ -275,7 +275,7 @@ exports.createProduct = async (req, res) => {
       categorySlug,
       brand: brand || '',
       sku: cleanSku,
-      price: Number(price),
+      price: (price !== undefined && price !== null && price !== '') ? Number(price) : 0,
       discountPrice: discountPrice ? Number(discountPrice) : null,
       pricePerPiece: pricePerPiece ? Number(pricePerPiece) : null,
       stock: Number(stock),

@@ -83,7 +83,12 @@ async function loadProductDetails(id) {
     const savingEl = document.getElementById('detail-saving-pct');
 
     const hasDiscount = product.discountPrice && product.discountPrice < product.price;
-    priceEl.textContent = `₹${hasDiscount ? product.discountPrice : product.price}`;
+    const displayUnitPrice = (product.pricePerPiece && Number(product.pricePerPiece) > 0)
+      ? product.pricePerPiece
+      : (hasDiscount ? product.discountPrice : product.price);
+    const unitBadge = (product.pricePerPiece && Number(product.pricePerPiece) > 0) ? ' / pc' : '';
+
+    priceEl.textContent = `₹${displayUnitPrice}${unitBadge}`;
 
     if (hasDiscount) {
       origPriceEl.textContent = `₹${product.price}`;
@@ -96,12 +101,12 @@ async function loadProductDetails(id) {
       savingEl.style.display = 'none';
     }
 
-    // Price Per Piece display
+    // Pack price info display if per-piece cost is active
     const pieceBox = document.getElementById('detail-price-per-piece-box');
     const pieceVal = document.getElementById('detail-price-per-piece-val');
     if (pieceBox && pieceVal) {
-      if (product.pricePerPiece && Number(product.pricePerPiece) > 0) {
-        pieceVal.textContent = `₹${product.pricePerPiece}`;
+      if (product.pricePerPiece && Number(product.pricePerPiece) > 0 && product.price) {
+        pieceVal.textContent = `Total Pack: ₹${product.price}`;
         pieceBox.style.display = 'block';
       } else {
         pieceBox.style.display = 'none';
